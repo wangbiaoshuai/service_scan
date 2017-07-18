@@ -8,8 +8,7 @@
 #include <thrift/transport/TBufferTransports.h>
 
 #include <log.h>
-
-#define LOG_CONFIG_PATH "../config/log4cplus.properties"
+#include "service_reg.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -19,6 +18,7 @@ using namespace ::apache::thrift::server;
 using boost::shared_ptr;
 
 using namespace  ::com::vrv::cems::common::thrift::service;
+using namespace cems::service::scan;
 
 class CommonServiceHandler : virtual public CommonServiceIf 
 {
@@ -46,6 +46,10 @@ int main(int argc, char **argv)
 {
     INIT_LOG(LOG_CONFIG_PATH);
     LOG_INFO("begin main");
+
+    ServiceReg service_reg;
+    service_reg.RegistToConfSrv();
+
     int port = 9090;
     shared_ptr<CommonServiceHandler> handler(new CommonServiceHandler());
     shared_ptr<TProcessor> processor(new CommonServiceProcessor(handler));
