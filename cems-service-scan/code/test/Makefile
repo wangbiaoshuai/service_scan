@@ -11,3 +11,8 @@ CXXFLAGS = -Wall -O2 -Wall -pthread -std=c++11 ${INCLUDE} ${LIBS}
 
 test_parse_config: src/test_parse_config.cc ../src/parse_configure.cc
 	${CXX} -o $@ $^ ${CXXFLAGS}
+
+.PHONY: clean
+
+clean:
+	${RM} test_parse_config

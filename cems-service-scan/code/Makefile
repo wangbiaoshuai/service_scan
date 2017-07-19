@@ -17,7 +17,7 @@ LIBS = -Wl,-R,"../lib" \
 	   -L./lib -lconfig_service_export -lvrv_service_export
 
 CXX = g++
-CXXFLAGS = -O2 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -std=c++11
+CXXFLAGS = -O2 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -std=c++11 -pthread
 PROJECT = FastScan
 OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o 
 
@@ -71,6 +71,7 @@ clean:
 	$(MAKE) -C input/vrvService clean
 
 package:
-	cp -r ../pack/installZip ../pack/CEMS-SERVICE-SCAN
-	cd ../pack/ && zip -r CEMS-SERVICE-SCAN.zip CEMS-SERVICE-SCAN
-	rm -rf ../pack/CEMS-SERVICE-SCAN
+	cp -r ./lib ../pack/installZip
+	cp -r ./config ../pack/installZip
+	cp -r ./bin ../pack/installZip
+	cd ../pack/; rm -rf CEMS-SERVICE-SCAN.zip; cp -r installZip CEMS-SERVICE-SCAN; zip -r CEMS-SERVICE-SCAN.zip CEMS-SERVICE-SCAN; rm -rf CEMS-SERVICE-SCAN; cd -

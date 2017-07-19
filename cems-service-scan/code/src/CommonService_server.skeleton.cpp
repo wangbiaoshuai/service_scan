@@ -48,9 +48,29 @@ int main(int argc, char **argv)
     LOG_INFO("begin main");
 
     ServiceReg service_reg;
-    service_reg.RegistToConfSrv();
 
-    int port = 9090;
+    if(!service_reg.IsLegalAddr())
+    {
+        LOG_ERROR("service ip is illegal");
+        return -1;
+    }
+    bool res = false;
+    do
+    {
+        res = service_reg.RegistToConfSrv();
+        if(res)
+        {
+            break;
+        }
+        else
+        {
+            sleep(60);
+        }
+    }while(true);
+
+    service_reg.StartHeartThead();
+
+    int port = service_reg.GetServicePort();
     shared_ptr<CommonServiceHandler> handler(new CommonServiceHandler());
     shared_ptr<TProcessor> processor(new CommonServiceProcessor(handler));
     shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
@@ -59,6 +79,8 @@ int main(int argc, char **argv)
 
     TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
     server.serve();
+
+    service_reg.StopHeartThead();
     LOG_INFO("service end");
     return 0;
 }

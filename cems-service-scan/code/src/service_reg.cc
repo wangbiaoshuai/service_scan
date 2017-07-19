@@ -27,7 +27,10 @@ ServiceReg::ServiceReg():
 service_bean_(),
 server_ip_(""),
 server_port_(""),
-server_areaID_("")
+server_areaID_(""),
+heart_id_(""),
+heart_status_(true),
+heart_thread_()
 {
     ParseConfigure::GetInstance().Init();
     ReadConfig();
@@ -67,7 +70,7 @@ bool ServiceReg::ReadConfig()
     /*key = "service.serverAreaId";
     ParseConfigure::GetInstance().GetProperty(key, service_bean_.orgID);*/
 
-    service_bean_.SSID = GenericUUID_1();
+    service_bean_.SSID = GenericSSID();
     service_bean_.serverID  = GenericUUID(service_bean_.ip);
 
     key = "service.name";
@@ -96,7 +99,7 @@ ServiceReg::~ServiceReg()
 void ServiceReg::WriteConfig()
 {
     string key = "service.heartId";
-    ParseConfigure::GetInstance().SetProperty(key, service_bean_.SSID, 0);
+    ParseConfigure::GetInstance().SetProperty(key, heart_id_, 0);
 
     key = "service.serverAreaId";
     ParseConfigure::GetInstance().SetProperty(key, service_bean_.orgID, 0);
@@ -105,11 +108,48 @@ void ServiceReg::WriteConfig()
     ParseConfigure::GetInstance().SetProperty(key, service_bean_.SSID, 0);
 
     key = "service.installTime";
+    time_t time = service_bean_.installTime;
+    char tmBuf[100] = {0};
+    strftime(tmBuf, 100, "%Y-%m-%d %H:%M:%S", localtime(&time));
     stringstream ss;
-    ss << service_bean_.installTime;
+    ss << tmBuf;
     ParseConfigure::GetInstance().SetProperty(key, ss.str(), 0);
 
+    key = "service.location";
+    ParseConfigure::GetInstance().SetProperty(key, service_bean_.location, 0);
+
     ParseConfigure::GetInstance().Flush();
+}
+
+int32_t ServiceReg::GetServicePort()
+{
+    return service_bean_.port;
+}
+
+bool ServiceReg::IsLegalAddr()
+{
+    vector<string> ips;
+    GetIps(ips);
+    if(ips.empty())
+    {
+        LOG_WARN("IsLegalAddr: GetIps failed");
+        return true;
+    }
+
+    register size_t i;
+    for(i = 0; i < ips.size(); i++)
+    {
+        if(service_bean_.ip == ips[i])
+        {
+            LOG_INFO("service ip:" << service_bean_.ip);
+            return true;
+        }
+    }
+    if(i == ips.size())
+    {
+        return false;
+    }
+    return true;
 }
 
 std::string ServiceReg::GetAreaId()
@@ -163,6 +203,17 @@ bool ServiceReg::RegistToConfSrv()
 {
     LOG_INFO("begin RegistToConfSrv");
     bool ret = true;
+
+    service_bean_.orgID = GetAreaId();
+    if(service_bean_.orgID.empty())
+    {
+        LOG_ERROR("RegistToConfSrv: Failed to get areaID");
+        return false;
+    }
+
+    time_t timep = time(NULL);
+    service_bean_.installTime = timep;
+
     boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), stoul(server_port_)));
     socket->setConnTimeout(1000 * 5); // set connection timeout 5S
     boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));
@@ -175,14 +226,14 @@ bool ServiceReg::RegistToConfSrv()
         int i = 0;
         do
         {
-            ReadConfig();
+            //ReadConfig();
             client.registerService(result, service_bean_);
             i++;
         }while(result.property == 4 && i < 3);
 
         if(result.property == 1 || result.property == 2)
         {
-            service_bean_.SSID = result.ID;
+            heart_id_ = result.ID;
             WriteConfig();
             LOG_INFO("RegistToConfSrv: register service success. ip:" << service_bean_.ip << ", port:" << service_bean_.port);
         }
@@ -296,7 +347,88 @@ void ServiceReg::QueryService(std::vector<ServiceConfigBean>& service_info, cons
     return;
 }
 
-std::string ServiceReg::GenericUUID_1()
+void ServiceReg::StartHeartThead()
+{
+    heart_thread_ = std::thread(&ServiceReg::StartHeartBeat, this);
+}
+
+void ServiceReg::StopHeartThead()
+{
+    heart_status_ = false;
+    if(heart_thread_.joinable())
+    {
+        heart_thread_.join();
+        LOG_INFO("StopHeartThead: heart beat has stoped!");
+    }
+}
+
+void ServiceReg::StartHeartBeat()
+{
+    bool res = false;
+    int i = 0;
+    while(heart_status_)
+    {
+        if(i == 2)
+        {
+            break;
+        }
+        res = HeartBeat();
+        if(!res)
+        {
+            i++;
+        }
+        else
+        {
+            i = 0;
+        }
+        sleep(3);
+    }
+
+    if(i == 2 && heart_status_ == true)
+    {
+        LOG_ERROR("StartHeartBeat: heart beat failed");
+        //重启服务
+    }
+    return;
+}
+
+bool ServiceReg::HeartBeat()
+{
+    bool ret = true;
+    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), stoul(server_port_)));
+    socket->setConnTimeout(1000 * 5);
+    boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));
+    boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+    ConfigServiceClient client(protocol);
+
+    try
+    {
+        transport->open();
+        if(!service_bean_.SSID.empty())
+        {
+            int8_t result = client.serviceHeart(service_bean_.SSID);
+            if(result != 1 && result != 2)
+            {
+                LOG_ERROR("HeartBeart error: result=" << result);
+                ret = false;
+            }
+        }
+        else
+        {
+            LOG_ERROR("HeartBeart: service SSID is empty, please register service.");
+            ret = false;
+        }
+        transport->close();
+    }
+    catch(TException& tx)
+    {
+        LOG_ERROR("HeartBeart: thrift exception:" << tx.what());
+        ret = false;
+    }
+    return ret;
+}
+
+std::string ServiceReg::GenericSSID()
 {
     std::string sid;
     time_t now;

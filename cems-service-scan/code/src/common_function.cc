@@ -267,7 +267,7 @@ std::string GetCurrentIp()
     return szIp;
 }
 
-std::string GetIps(MAP_COMMON & mip)
+std::string GetIps(vector<string> & mip)
 {
     std::string szIp;
     int sock_fd;
@@ -320,7 +320,7 @@ std::string GetIps(MAP_COMMON & mip)
 
         if(szIp.compare("127.0.0.1") != 0 && szIp.compare("0.0.0.0") != 0)
         {
-            mip.insert(MAP_COMMON::value_type(szIp, szIp));
+            mip.push_back(szIp);
         }
     }
 

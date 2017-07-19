@@ -13,7 +13,7 @@ TEST(test_configure, test_get_property)
     string key="service.ip";
     string value;
     ASSERT_TRUE(ParseConfigure::GetInstance().GetProperty(key, value));
-    ASSERT_TRUE(value == "192.168.134.97");
+    ASSERT_TRUE(value == "192.168.133.93");
 
     key = "updateUrl";
     ASSERT_TRUE(ParseConfigure::GetInstance().GetProperty(key, value));
@@ -40,6 +40,15 @@ TEST(test_configure, test_set_property)
     
     ASSERT_TRUE(ParseConfigure::GetInstance().GetProperty(key, res));
     ASSERT_TRUE(res == "2017/7/17");
+}
+
+TEST(test_configure, test_get_empty_property)
+{
+    ParseConfigure::GetInstance().Init("./config.properties");
+    string key = "service.installTime";
+    string value;
+    ASSERT_TRUE(ParseConfigure::GetInstance().GetProperty(key, value));
+    ASSERT_TRUE(value.empty());
 }
 
 int main(int argc, char** argv)
