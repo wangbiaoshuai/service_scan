@@ -181,11 +181,13 @@ void ParseConfigure::SetProperty(const string& key, const string& value, bool fl
 void ParseConfigure::UpdateConfigFile(const string& key, const string& value, bool flush)
 {
     unique_lock<mutex> lck(mutex_file_);
-    if(!flush)
-        return;
     if(value == m_configure_[key])
         return;
     m_configure_[key] = value;
+ 
+    if(!flush)
+        return;
+
     ofstream outfile(config_file_);
     if(!outfile)
         return;
@@ -204,9 +206,11 @@ void ParseConfigure::UpdateConfigFile(const string& key, const string& value, bo
 void ParseConfigure::AppendToConfigFile(const string& key, const string& value, bool flush)
 {
     unique_lock<mutex> lck(mutex_file_);
+    m_configure_[key] = value;
+ 
     if(!flush)
         return;
-    m_configure_[key] = value;
+
     ofstream outfile(config_file_, ios::out|ios::app);
     if(!outfile)
         return;

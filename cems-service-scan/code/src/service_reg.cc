@@ -71,22 +71,24 @@ bool ServiceReg::ReadConfig()
     ParseConfigure::GetInstance().GetProperty(key, service_bean_.orgID);*/
 
     service_bean_.SSID = GenericSSID();
+
+    service_bean_.__isset.serverID = true;
     service_bean_.serverID  = GenericUUID(service_bean_.ip);
 
     key = "service.name";
+    service_bean_.__isset.name = true;
     ParseConfigure::GetInstance().GetProperty(key, service_bean_.name);
-    
+   
+    service_bean_.__isset.location = true;
     service_bean_.location = GetCurrentPath();
 
     key = "service.description";
+    service_bean_.__isset.description = true;
     ParseConfigure::GetInstance().GetProperty(key, service_bean_.description);
 
-    key = "service.installTime";
-    ParseConfigure::GetInstance().GetProperty(key, value);
-    if(!value.empty())
-    {
-        service_bean_.installTime = stoll(value);
-    }
+    time_t timer = time(NULL);
+    service_bean_.__isset.installTime = true;
+    service_bean_.installTime = timer;
 
     LOG_INFO("ServiceReg::ReadConfig success!");
     return true;
@@ -201,18 +203,8 @@ std::string ServiceReg::GetAreaId()
 
 bool ServiceReg::RegistToConfSrv()
 {
-    LOG_INFO("begin RegistToConfSrv");
+    LOG_INFO("begin to register to " << server_ip_ << ":" << server_port_);
     bool ret = true;
-
-    service_bean_.orgID = GetAreaId();
-    if(service_bean_.orgID.empty())
-    {
-        LOG_ERROR("RegistToConfSrv: Failed to get areaID");
-        return false;
-    }
-
-    time_t timep = time(NULL);
-    service_bean_.installTime = timep;
 
     boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), stoul(server_port_)));
     socket->setConnTimeout(1000 * 5); // set connection timeout 5S
@@ -235,7 +227,7 @@ bool ServiceReg::RegistToConfSrv()
         {
             heart_id_ = result.ID;
             WriteConfig();
-            LOG_INFO("RegistToConfSrv: register service success. ip:" << service_bean_.ip << ", port:" << service_bean_.port);
+            LOG_INFO("RegistToConfSrv: register service success. heartID:" << heart_id_);
         }
         else
         {
@@ -249,6 +241,7 @@ bool ServiceReg::RegistToConfSrv()
         LOG_ERROR("RegistToConfSrv: thrift exception:" << tx.what());
         ret = false;
     }
+
     return ret;
 }
 
@@ -261,16 +254,23 @@ bool ServiceReg::GetServiceIp(const std::string& service_code, const std::string
     }
 
     vector<ServiceConfigBean> service_info;
-    std::string version = "1.0";
-    ParseConfigure::GetInstance().GetProperty("service.version", version);
+    std::string version = "1.0.20160614";
+    //ParseConfigure::GetInstance().GetProperty("service.version", version);
 
     QueryService(service_info, service_code, version);
+
+    if(service_info.empty())
+    {
+        LOG_ERROR("GetServiceIp: can not query service:" << service_code << " info.");
+        return false;
+    }
 
     bool fetch = false;
 
     for(register size_t i = 0; i < service_info.size(); i++)
     {
         ServiceConfigBean bean = service_info.at(i);
+        LOG_INFO("query serivceID:" << bean.serviceID);
         if(service_code == bean.serviceID)
         {
             ip = bean.ip;
@@ -322,6 +322,7 @@ string ServiceReg::RequestService(const std::string& ip, const std::string& port
 
 void ServiceReg::QueryService(std::vector<ServiceConfigBean>& service_info, const std::string& service_code, const std::string& version)
 {
+    LOG_INFO("Begin query service:" << service_code << " info.");
     if(server_ip_.empty() || server_port_.empty())
     {
         LOG_ERROR("QueryService: server ip or port is empty");
@@ -404,18 +405,19 @@ bool ServiceReg::HeartBeat()
     try
     {
         transport->open();
-        if(!service_bean_.SSID.empty())
+        if(!heart_id_.empty())
         {
-            int8_t result = client.serviceHeart(service_bean_.SSID);
+            int result = client.serviceHeart(heart_id_);
             if(result != 1 && result != 2)
             {
                 LOG_ERROR("HeartBeart error: result=" << result);
                 ret = false;
             }
+            LOG_DEBUG("heart info: " << heart_id_ << ", result: " << result);
         }
         else
         {
-            LOG_ERROR("HeartBeart: service SSID is empty, please register service.");
+            LOG_ERROR("HeartBeart: service heartID is empty, please register service.");
             ret = false;
         }
         transport->close();
