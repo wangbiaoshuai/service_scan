@@ -1,0 +1,7 @@
+[INFO ] [07/18/17 19:05:10,815.420] [begin main][src/CommonService_server.skeleton.cpp:48] [tid:139908722145408]
+[INFO ] [07/18/17 19:05:10,817.918] [ServiceReg::ReadConfig success!][src/service_reg.cc:90] [tid:139908722145408]
+[INFO ] [07/18/17 19:05:10,818.201] [ips:192.168.133.93][src/service_reg.cc:135] [tid:139908722145408]
+[INFO ] [07/18/17 19:05:10,818.228] [service ip:192.168.133.93][src/service_reg.cc:136] [tid:139908722145408]
+[INFO ] [07/18/17 19:05:10,818.242] [service ip:192.168.133.93][src/service_reg.cc:139] [tid:139908722145408]
+[INFO ] [07/18/17 19:05:10,818.256] [begin RegistToConfSrv][src/service_reg.cc:199] [tid:139908722145408]
+[ERROR] [07/18/17 19:05:10,819.780] [RegistToConfSrv: thrift exception:socket open() error: Connection refused][src/service_reg.cc:233] [tid:139908722145408]

@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# "$Id: cups.sh,v 1.10 2014/11/12 9:15:16 MJD $"
+#
+#   Startup/shutdown script for the Common UNIX Printing System (CEMS-SERVICE-SCAN).
+#
+#   Linux chkconfig stuff:
+#
+#   chkconfig: 2345 98 50
+#   description: Startup/shutdown script for the Common UNIX \
+#                Printing System (CEMS-SERVICE-SCAN).
+#
+#   Copyright 2010-2015 by vrv co.,ltd, all rights reserved.
+#
+#   These coded instructions, statements, and computer programs are the
+#   property of VRV Software Products Distribution and use rights are outlined in the file
+#   "LICENSE.txt" which should have been included with this file.  If this
+#   file is missing or damaged
+#
+#       WWW: http://www.vrv.com.cn
+#
+# heavily edited so that it's more like other scripts in init.d on Red Hat
+# Linux
+#
+### BEGIN INIT INFO
+# Provides: CEMS-SERVICE-SCAN
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: The CEMS-SERVICE-SCAN scheduler
+# Description: The CEMS-SERVICE-SCAN scheduler
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+ServiceName=CEMS-SERVICE-SCAN
+DAEMON=/usr/local/service/CEMS-SERVICE-SCAN/bin/FastScan 
+
+RETVAL=0
+
+start () {
+	# start daemon
+	echo -n $"Starting $ServiceName: "
+	daemon nohup  $DAEMON >/dev/null 2>&1 &
+	RETVAL=$?
+}
+
+stop () {
+	# stop daemon
+	echo -n $"Stopping $ServiceName: "
+	killproc $DAEMON
+	RETVAL=$?
+}
+
+restart() {
+	stop
+	start
+}
+
+status() {
+		local result
+		echo "check status of ${ServiceName}..."
+
+		result = $( ps -ef | grep FastScan )
+
+		if [ [$result >  0] ] ;  then
+
+			echo "${ServiceName} is up"
+
+			RETVAL=0
+
+		else
+			echo "${ServiceName} is down"
+
+			RETVAL=1
+
+		fi
+
+		echo "check status of ${ServiceName} ... done"
+
+                RETVAL=$?
+		
+}
+
+case $1 in
+	start)
+		start
+	;;
+	stop)
+		stop
+	;;
+	restart)
+		restart
+	;;	
+	status)
+		status
+	;;
+	*)
+
+	echo $"Usage: $ServiceName {start|stop|restart|status}" 
+	exit 1
+esac
+
+exit $RETVAL

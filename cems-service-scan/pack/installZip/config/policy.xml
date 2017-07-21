@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- 服务策略 -->
+<root>
+	<!-- 配置thrift -->
+	<!--selectorThreads:最大可用服务器处理器数(1-16);workerThreads:最大工作线程数(1-500)-->
+	<thriftBean selectorThreads="2" workerThreads="400"/>
+	
+	<!-- 日志配置-->
+	<logBean logLevel="INFO" logPath="../logs/Sys.log" />
+	
+	<!-- 服务自身配置-->
+	<params> 
+		<!-- 扫描间隔时间(分)-->
+		<paramBean key="intervalTime" value="30" />
+		<!--- 扫描任务 -->
+		<paramBean key="ipRange" value="ipRange">
+			<param>
+				<ip>192.168.88.1-192.168.88.128</ip>
+				<orgId>org2</orgId>
+			</param>
+			<param>
+				<ip>192.168.1.1-192.168.1.254</ip>
+				<orgId>org1</orgId>
+			</param>
+		</paramBean>
+	</params>
+	<timers>
+		<!--服务拉取自身服务策略 -->
+		<timerBean>
+			<name>PolicyXmlJob</name><!--定时器名称-->
+			<group>PolicyXmlGroup</group>
+			<trigger>PolicyXmlTrigger</trigger>
+			<cycle>0 * 0/3 * * ?</cycle><!--定时器执行周期-->
+		</timerBean>
+	</timers>
+</root>
