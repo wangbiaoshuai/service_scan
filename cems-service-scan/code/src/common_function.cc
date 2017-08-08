@@ -8,6 +8,8 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "CRC32.h"
 #include "md5module.h"

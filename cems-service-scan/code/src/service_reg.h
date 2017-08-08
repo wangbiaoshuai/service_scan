@@ -3,9 +3,8 @@
 
 #include <string>
 #include <vector>
-#include <atomic>
-#include <thread>
 #include "ConfigService.h"
+#include "config_types.h"
 
 namespace cems{ namespace service{ namespace scan{
 
@@ -21,22 +20,25 @@ public:
     ServiceReg();
     ~ServiceReg();
 
-    bool IsLegalAddr();
-    bool RegistToConfSrv();
-    void StartHeartThead();
-    void StopHeartThead();
+    bool Start();
+    bool Stop();
     int32_t GetServicePort();
+    void StartHeartBeat();
+    bool RegistToConfSrv();
+    bool Fetch(const std::string& service_code, const std::string& org_id, std::string& ip, std::string& port);
+    std::string RequestService(const std::string& ip, const std::string& port, const std::string& maxcode, const std::string& mincode, const bool& bzip, std::string& jdata);
 
+private:
+    bool IsLegalAddr();
+    bool ReregisterService();
+    int StartHeartThead();
+    int StopHeartThead();
+    
 private:
     bool ReadConfig();
     void WriteConfig();
     std::string GetAreaId();
-    void StartHeartBeat();
     bool HeartBeat();
-    std::string RequestService(const std::string& ip, const std::string& port, const std::string& maxcode, const std::string& mincode, const bool& bzip, std::string& jresult);
-
-    bool GetServiceIp(const std::string& service_code, const std::string& org_id, std::string& ip, std::string& port);
-
     void QueryService(std::vector<ServiceConfigBean>& service_info, const std::string& service_code, const std::string& version);
 
 private:
@@ -49,8 +51,8 @@ private:
     std::string server_port_;
     std::string server_areaID_;
     std::string heart_id_;
-    std::atomic<bool> heart_status_;
-    std::thread heart_thread_;
+    bool heart_status_;
+    pthread_t heart_thread_;
 };
 }}}
 #endif // SERVICE_REG_H_

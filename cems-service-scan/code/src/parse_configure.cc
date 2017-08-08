@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "log.h"
+
 namespace cems{ namespace service{ namespace scan{
 using namespace std;
 
@@ -34,12 +36,17 @@ void ParseConfigure::Init(const string& filename)
 
 bool ParseConfigure::ReadConfig(const string & filename)
 {
-    unique_lock<mutex> lck(mutex_file_);
+    if(!mutex_file_.Lock())
+    {
+        LOG_ERROR("ReadConfig: lock file failed");
+        return false;
+    }
     m_configure_.clear();
     ifstream infile(filename.c_str());
     if (!infile) 
     {
         //cout << "file open error" << endl;
+        mutex_file_.Unlock();
         return false;
     }
     string line, key, value;
@@ -52,6 +59,7 @@ bool ParseConfigure::ReadConfig(const string & filename)
     }
     
     infile.close();
+    mutex_file_.Unlock();
     return true;
 }
 
@@ -180,62 +188,84 @@ void ParseConfigure::SetProperty(const string& key, const string& value, bool fl
 
 void ParseConfigure::UpdateConfigFile(const string& key, const string& value, bool flush)
 {
-    unique_lock<mutex> lck(mutex_file_);
-    if(value == m_configure_[key])
-        return;
-    m_configure_[key] = value;
- 
-    if(!flush)
-        return;
-
-    ofstream outfile(config_file_);
-    if(!outfile)
-        return;
-
-    map<string, string>::iterator it;
-    for(it = m_configure_.begin(); it != m_configure_.end(); ++it)
+    if(!mutex_file_.Lock())
     {
-        string line = it->first + "=" + it->second;
-        outfile<<line<<endl;
+        LOG_ERROR("UpdateConfigFile: lock file failed");
+        return;
     }
+    do{
+        if(value == m_configure_[key])
+            break;
+        m_configure_[key] = value;
 
-    outfile.close();        
+        if(!flush)
+            break;
+
+        ofstream outfile(config_file_.c_str());
+        if(!outfile)
+            break;
+
+        map<string, string>::iterator it;
+        for(it = m_configure_.begin(); it != m_configure_.end(); ++it)
+        {
+            string line = it->first + "=" + it->second;
+            outfile<<line<<endl;
+        }
+
+        outfile.close();
+    }while(0);
+    mutex_file_.Unlock();
     return;
 }
 
 void ParseConfigure::AppendToConfigFile(const string& key, const string& value, bool flush)
 {
-    unique_lock<mutex> lck(mutex_file_);
-    m_configure_[key] = value;
- 
-    if(!flush)
+    if(!mutex_file_.Lock())
+    {
+        LOG_ERROR("AppendToConfigFile: lock file failed");
         return;
+    }
+    do{
+        m_configure_[key] = value;
 
-    ofstream outfile(config_file_, ios::out|ios::app);
-    if(!outfile)
-        return;
+        if(!flush)
+            break;
 
-    string line = key + "=" + value;
-    outfile<<line<<endl;
-    outfile.close();
+        ofstream outfile(config_file_.c_str(), ios::out|ios::app);
+        if(!outfile)
+            break;
+
+        string line = key + "=" + value;
+        outfile<<line<<endl;
+        outfile.close();
+    }while(0);
+    mutex_file_.Unlock();
     return;
 }
 
 void ParseConfigure::Flush()
 {
-    unique_lock<mutex> lck(mutex_file_);
-    ofstream outfile(config_file_);
-    if(!outfile)
-        return;
-
-    map<string, string>::iterator it;
-    for(it = m_configure_.begin(); it != m_configure_.end(); ++it)
+    if(!mutex_file_.Lock())
     {
-        string line = it->first + "=" + it->second;
-        outfile<<line<<endl;
+        LOG_ERROR("Flush: lock file failed");
+        return;
     }
+    do
+    {
+        ofstream outfile(config_file_.c_str());
+        if(!outfile)
+            break;
 
-    outfile.close();        
+        map<string, string>::iterator it;
+        for(it = m_configure_.begin(); it != m_configure_.end(); ++it)
+        {
+            string line = it->first + "=" + it->second;
+            outfile<<line<<endl;
+        }
+
+        outfile.close();
+    }while(0);
+    mutex_file_.Unlock();
     return;
 }
 }}}

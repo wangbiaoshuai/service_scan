@@ -6,9 +6,18 @@
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <thrift/server/TThreadedServer.h>
 
-#include <log.h>
+#include "log.h"
 #include "service_reg.h"
+#include "fastscan.h"
+#include "defines.h"
+#include "common_function.h"
+#include "gen_algorithm.h"
+#include "parse_policy.h"
+#include "parse_configure.h"
+#include "json/json.h"
+#include "CRC32.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -20,6 +29,8 @@ using boost::shared_ptr;
 using namespace  ::com::vrv::cems::common::thrift::service;
 using namespace cems::service::scan;
 
+#define COMPRESS_MODE 1
+
 class CommonServiceHandler : virtual public CommonServiceIf 
 {
 public:
@@ -28,11 +39,7 @@ public:
         // Your initialization goes here
     }
 
-    void getDataTS(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const bool isEncrypt, const std::string& key, const int32_t flag)
-    {
-        // Your implementation goes here
-        printf("getDataTS\n");
-    }
+    void getDataTS(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const bool isEncrypt, const std::string& key, const int32_t flag);
 
     void getDataTC(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const std::string& sessionId, const int32_t msgCode) 
     {
@@ -40,7 +47,171 @@ public:
         printf("getDataTC\n");
     }
 
+    int GetCompressMode();
+    bool IsNotify(const std::string& maxCode, const std::string& minCode);
+    bool IsPolicy(const std::string& maxCode, const std::string& minCode);
+    std::string WriteResult(std::string maxCode, std::string minCode, std::string ret, std::string desc, std::string jdata);
+    std::string EncryptResult(std::string szRet, bool isEncrypt, bool isZip, ST_ENCRYPT & encrypt, int mode);
+    bool IsValidCrc(const std::string& szCrc, const std::string& szjdata);
 };
+
+void CommonServiceHandler::getDataTS(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const bool isEncrypt, const std::string& key, const int32_t flag)
+{
+    LOG_INFO("getDataTS: start.");
+    ST_ENCRYPT encrypt;
+    EncryptMode(flag, key, encrypt);
+    int mode = GetCompressMode();
+
+    //功能号校验
+    if(!IsNotify(maxCode, minCode) && !IsPolicy(maxCode, minCode))
+    {
+        _return = WriteResult(maxCode, minCode,  "1",  "功能号调用错误。", "");
+        _return = EncryptResult(_return, isEncrypt, isZip, encrypt, mode);
+        LOG_ERROR("getDataTS: maxCode or minCode is error: maxCode="<<maxCode<<", minCode="<<minCode);
+        return;
+    }
+
+    //CRC校验
+    if(!IsValidCrc(checkCode, data))
+    {
+        _return = WriteResult(maxCode, minCode,  "1",  "CRC 校验失败。",
+                "");
+        _return = EncryptResult(_return, isEncrypt, isZip, encrypt, mode);
+        LOG_ERROR("getDataTS: check CRC failed.");
+        return;
+    }
+
+    CGenAlgori genrial;
+    string recv_data = data;
+    if(isEncrypt)
+    {
+        recv_data = genrial.DeCrypt(data, encrypt.mode, encrypt.szKey);
+    }
+
+    if(isZip)
+    {
+        recv_data = genrial.UnCompress(recv_data, mode);
+    }
+
+    if(IsPolicy(maxCode, minCode))
+    {
+        if(ParsePolicy::GetInstance().WritePolicy(recv_data) != -1)
+        {
+            LOG_INFO("getDataTS: update policy file success.");
+            _return = WriteResult(maxCode, minCode,  "0",  "功能调用成功。", "");
+        }
+        else
+        {
+            LOG_ERROR("getDataTS: update policy file error.");
+            _return = WriteResult(maxCode, minCode,  "1",  "解析xml失败。", "");
+        }
+    }
+
+    if(IsNotify(maxCode, minCode))
+    {
+        ServiceReg service_reg;
+        if(service_reg.RegistToConfSrv())
+        {
+            LOG_INFO("getDataTS: register service success.");
+            _return = WriteResult(maxCode, minCode,  "0",  "通知成功。", "");
+        }
+        else
+        {
+            LOG_ERROR("getDataTS: register service failed.");
+            _return = WriteResult(maxCode, minCode,  "1",  "通知失败。", "");
+        }
+    }
+    _return = EncryptResult(_return, isEncrypt, isZip, encrypt, mode);
+    LOG_INFO("getDataTS: end.");
+    return;
+}
+
+int CommonServiceHandler::GetCompressMode()
+{
+    int mode = 0;
+    string key = "service.compressmode";
+    string value;
+    if(ParseConfigure::GetInstance().GetProperty(key, value) && !value.empty())
+    {
+        mode = atoi(value.c_str());
+    }
+    return mode;
+}
+
+bool CommonServiceHandler::IsNotify(const std::string& maxCode, const std::string& minCode)
+{
+    if(maxCode != MAXCODE_SCAN_SERVICE || minCode != MINCODE_SCAN_NOTIFY)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool CommonServiceHandler::IsPolicy(const std::string& maxCode, const std::string& minCode)
+{
+    if(maxCode != MAXCODE_SCAN_SERVICE || minCode != MINCODE_SCAN_POLICY)
+    {
+        return false;
+    }
+    return true;
+}
+
+std::string CommonServiceHandler::WriteResult(std::string maxCode, std::string minCode, std::string ret, std::string desc, std::string jdata)
+{
+    Json::Value root;
+    root["maxCode"] = Json::Value(maxCode);
+    root["minCode"] = Json::Value(minCode);
+    root["result"] = Json::Value(ret);
+    root["desc"] = Json::Value(desc);
+
+    Json::Value jarray;
+    Json::Value temp;
+    temp[""] = Json::Value(jdata);
+    jarray.append(jdata);
+    root["jdata"] = jarray;
+    Json::FastWriter writer;
+    std::string szRet = writer.write(root);
+    return szRet;
+}
+
+std::string CommonServiceHandler::EncryptResult(std::string szRet, bool isEncrypt, bool isZip, ST_ENCRYPT & encrypt, int mode)
+{
+    std::string szReturn = szRet;
+    CGenAlgori genrial;
+    if(isZip)
+    {
+        if(mode == 1 || mode == 2) //deflate gzip
+        {
+            szReturn = genrial.Compress(szReturn, mode);
+        }
+    }
+    if(isEncrypt)
+    {
+        szReturn = genrial.EnCrypt(szReturn, encrypt.mode, encrypt.szKey);
+    }
+    return szReturn;
+}
+
+bool CommonServiceHandler::IsValidCrc(const std::string& szCrc, const std::string& szjdata)
+{
+    unsigned int uCrc;
+    std::string szDataCRC;
+    StringCrc32((const unsigned char*)szjdata.c_str(), &uCrc, (int)szjdata.length());
+    
+    char buf[50] = {0};
+    sprintf(buf, "%08X", uCrc);
+    szDataCRC = buf;
+
+    if(szDataCRC.compare(szCrc) == 0)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 
 int main(int argc, char **argv) 
 {
@@ -48,39 +219,27 @@ int main(int argc, char **argv)
     LOG_INFO("begin main");
 
     ServiceReg service_reg;
-
-    if(!service_reg.IsLegalAddr())
+    if(service_reg.Start() == false)
     {
-        LOG_ERROR("service ip is illegal");
+        LOG_ERROR("main: register serivce start failed");
         return -1;
     }
-    bool res = false;
-    do
-    {
-        res = service_reg.RegistToConfSrv();
-        if(res)
-        {
-            break;
-        }
-        else
-        {
-            sleep(60);
-        }
-    }while(true);
 
-    service_reg.StartHeartThead();
+    FastScan fast_scan;
+    fast_scan.Start();
 
     int port = service_reg.GetServicePort();
     shared_ptr<CommonServiceHandler> handler(new CommonServiceHandler());
     shared_ptr<TProcessor> processor(new CommonServiceProcessor(handler));
     shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-    shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+    shared_ptr<TTransportFactory> transportFactory(new TFramedTransportFactory());
     shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-    TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+    TThreadedServer server(processor, serverTransport, transportFactory, protocolFactory);
     server.serve();
 
-    service_reg.StopHeartThead();
+    fast_scan.Stop();
+    service_reg.Stop();
     LOG_INFO("service end");
     return 0;
 }

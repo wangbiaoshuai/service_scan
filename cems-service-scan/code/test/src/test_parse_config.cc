@@ -9,7 +9,7 @@ using namespace cems::service::scan;
 
 TEST(test_configure, test_get_property)
 {
-    ParseConfigure::GetInstance().Init();
+    ParseConfigure::GetInstance().Init("config.properties");
     string key="service.ip";
     string value;
     ASSERT_TRUE(ParseConfigure::GetInstance().GetProperty(key, value));

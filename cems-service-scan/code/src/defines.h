@@ -153,6 +153,7 @@ typedef std::list<MAP_COMMON> LIST_KEYS;
 
 #define SERVICE_CODE_ADDRESS	"00FF0600"	    //地址服务
 #define MINCODE_ADDRESS_AREAID		"8"		    //获取AreaId
-#define MINCODE_ADDRESS_UPDATEURL       "5"		    //获取策略更新地址
+#define MINCODE_ADDRESS_UPDATEURL       "5"		    //获取CEMS平台连接信息
+#define MINCODE_ADDRESS_UPDATEPOLICY    "12"    //策略拉取接口
 
 #endif

@@ -2,24 +2,27 @@ SDK_PATH = ../../SDK-64
 THRIFT_PATH = ${SDK_PATH}/thrift-0.9.0
 LOG_PATH = ${SDK_PATH}/log4cplus
 JSON_PATH = ${SDK_PATH}/jsoncpp
+TINYXML_PATH = ${SDK_PATH}/tinyxml
 
 INCLUDE = -I./input/configService/src \
 		  -I./input/vrvService/src \
 		  -I${THRIFT_PATH}/include \
 		  -I${LOG_PATH}/include \
 		  -I${THRIFT_PATH}/include/thrift \
-		  -I${JSON_PATH}/include
+		  -I${JSON_PATH}/include \
+		  -I${TINYXML_PATH}/include
 
 LIBS = -Wl,-R,"../lib" \
 	   -L${THRIFT_PATH}/lib -lthrift-0.9.1 \
 	   -L${LOG_PATH}/lib -llog4cplus \
 	   -L${JSON_PATH}/lib -ljson \
+	   -L${TINYXML_PATH}/lib -ltinyxml \
 	   -L./lib -lconfig_service_export -lvrv_service_export
 
 CXX = g++
-CXXFLAGS = -O2 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -std=c++11 -pthread
+CXXFLAGS = -O1 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT
 PROJECT = FastScan
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o 
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/DetectHost.o .build/upreport.o .build/conv.o .build/parse_policy.o
 
 all: foremost ${PROJECT}
 
@@ -28,7 +31,7 @@ foremost:
 	$(MAKE) -C input/vrvService
 	$(MAKE) -C input/configService
 	cp ${THRIFT_PATH}/lib/libthrift-0.9.1.so ./lib
-	cp ${LOG_PATH}/lib/liblog4cplus-2.0.so.3 ./lib
+	cp ${LOG_PATH}/lib/liblog4cplus*.so* ./lib
 
 ${PROJECT}: ${OBJECTS}
 	${CXX} -o bin/$@ $^ ${CXXFLAGS} -rdynamic -ldl
@@ -63,10 +66,28 @@ ${PROJECT}: ${OBJECTS}
 .build/CRC32.o: src/CRC32.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
+.build/mutex.o: src/mutex.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/fastscan.o: src/fastscan.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/DetectHost.o: src/DetectHost.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/upreport.o: src/upreport.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/conv.o: src/conv.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/parse_policy.o: src/parse_policy.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
 
 .PHONY:clean
 clean:
-	$(RM) -r $(PROJECT) .build CEMS-SERVICE-SCAN.zip ./bin
+	$(RM) -r $(PROJECT) .build CEMS-SERVICE-SCAN.zip ./bin ./logs/Sys.log
 	$(MAKE) -C input/configService clean
 	$(MAKE) -C input/vrvService clean
 

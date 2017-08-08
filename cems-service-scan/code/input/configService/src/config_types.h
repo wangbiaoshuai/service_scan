@@ -11,8 +11,8 @@
 #include <thrift/TApplicationException.h>
 #include <thrift/protocol/TProtocol.h>
 #include <thrift/transport/TTransport.h>
-
 #include <thrift/cxxfunctional.h>
+#include <stdlib.h>
 #include "vrv_types.h"
 
 

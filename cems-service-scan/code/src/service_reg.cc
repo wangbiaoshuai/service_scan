@@ -58,7 +58,7 @@ bool ServiceReg::ReadConfig()
     key = "service.port";
     string value;
     ParseConfigure::GetInstance().GetProperty(key, value);
-    service_bean_.port = stoul(value);
+    service_bean_.port = atoi(value.c_str());
 
     key = "service.code";
     ParseConfigure::GetInstance().GetProperty(key, service_bean_.serviceID);
@@ -90,7 +90,7 @@ bool ServiceReg::ReadConfig()
     service_bean_.__isset.installTime = true;
     service_bean_.installTime = timer;
 
-    LOG_INFO("ServiceReg::ReadConfig success!");
+    LOG_DEBUG("ServiceReg::ReadConfig success!");
     return true;
 }
 
@@ -128,6 +128,47 @@ int32_t ServiceReg::GetServicePort()
     return service_bean_.port;
 }
 
+bool ServiceReg::Start()
+{
+    if(!IsLegalAddr())
+    {
+        LOG_ERROR("service ip is illegal");
+        return false;
+    }
+    bool res = false;
+    do
+    {
+        res = RegistToConfSrv();
+        if(res)
+        {
+            break;
+        }
+        else
+        {
+            LOG_ERROR("Start: register to configure service failed. sleep 60S...");
+            sleep(60);
+        }
+    }while(true);
+
+    //注册成功之后创建心跳线程
+    if(StartHeartThead() != 0)
+    {
+        LOG_ERROR("Start: StartHeartThead error");
+        return false;
+    }
+    return true;
+}
+
+bool ServiceReg::Stop()
+{
+    //停止心跳线程
+    if(StopHeartThead() != 0)
+    {
+        return false;
+    }
+    return true;
+}
+
 bool ServiceReg::IsLegalAddr()
 {
     vector<string> ips;
@@ -154,7 +195,7 @@ bool ServiceReg::IsLegalAddr()
     return true;
 }
 
-std::string ServiceReg::GetAreaId()
+std::string ServiceReg::GetAreaId() //目前没有使用,接口已经测试无问题
 {
     string res;
     std::string max_code = SERVICE_CODE_ADDRESS; //"00FF0600";
@@ -168,9 +209,9 @@ std::string ServiceReg::GetAreaId()
     jdata = writer.write(root);
 
     string addr_ip, addr_port;
-    if(GetServiceIp(max_code, "", addr_ip, addr_port) == false)
+    if(Fetch(max_code, "", addr_ip, addr_port) == false)
     {
-        LOG_ERROR("GetAreaId: GetServiceIp failed");
+        LOG_ERROR("GetAreaId: Fetch failed");
         return res;
     }
 
@@ -206,7 +247,7 @@ bool ServiceReg::RegistToConfSrv()
     LOG_INFO("begin to register to " << server_ip_ << ":" << server_port_);
     bool ret = true;
 
-    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), stoul(server_port_)));
+    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), atoll(server_port_.c_str())));
     socket->setConnTimeout(1000 * 5); // set connection timeout 5S
     boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -232,7 +273,7 @@ bool ServiceReg::RegistToConfSrv()
         else
         {
             ret = false;
-            LOG_ERROR("RegistToConfSrv: register service failed: " << result.property);
+            LOG_ERROR("RegistToConfSrv: register service failed: " << (int)result.property);
         }
         transport->close();
     }
@@ -245,23 +286,22 @@ bool ServiceReg::RegistToConfSrv()
     return ret;
 }
 
-bool ServiceReg::GetServiceIp(const std::string& service_code, const std::string& org_id, std::string& ip, std::string& port)
+bool ServiceReg::Fetch(const std::string& service_code, const std::string& org_id, std::string& ip, std::string& port)
 {
     if(service_code.empty())
     {
-        LOG_ERROR("GetServiceIp: service code is empty");
+        LOG_ERROR("Fetch: service code is empty");
         return false;
     }
 
     vector<ServiceConfigBean> service_info;
-    std::string version = "1.0.20160614";
-    //ParseConfigure::GetInstance().GetProperty("service.version", version);
+    std::string version = "1.0"; //版本号必须是1.0，否则查询不到服务
 
     QueryService(service_info, service_code, version);
 
     if(service_info.empty())
     {
-        LOG_ERROR("GetServiceIp: can not query service:" << service_code << " info.");
+        LOG_ERROR("Fetch: can not query service:" << service_code << " info.");
         return false;
     }
 
@@ -270,7 +310,6 @@ bool ServiceReg::GetServiceIp(const std::string& service_code, const std::string
     for(register size_t i = 0; i < service_info.size(); i++)
     {
         ServiceConfigBean bean = service_info.at(i);
-        LOG_INFO("query serivceID:" << bean.serviceID);
         if(service_code == bean.serviceID)
         {
             ip = bean.ip;
@@ -289,7 +328,7 @@ bool ServiceReg::GetServiceIp(const std::string& service_code, const std::string
 string ServiceReg::RequestService(const std::string& ip, const std::string& port, const std::string& maxcode, const std::string& mincode, const bool& bzip, std::string& jdata)
 {
     string res;
-    boost::shared_ptr<TSocket> socket(new TSocket(ip, stoul(port)));
+    boost::shared_ptr<TSocket> socket(new TSocket(ip, atoll(port.c_str())));
     socket->setConnTimeout(1000 * 5); // set connection timeout 5S
     boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -329,7 +368,7 @@ void ServiceReg::QueryService(std::vector<ServiceConfigBean>& service_info, cons
         return;
     }
 
-    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), stoul(server_port_)));
+    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), atoll(server_port_.c_str())));
     socket->setConnTimeout(1000 * 5); // set connection timeout 5S
     boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -348,30 +387,69 @@ void ServiceReg::QueryService(std::vector<ServiceConfigBean>& service_info, cons
     return;
 }
 
-void ServiceReg::StartHeartThead()
+void* thread_function(void* contex)
 {
-    heart_thread_ = std::thread(&ServiceReg::StartHeartBeat, this);
+    ServiceReg* srv = (ServiceReg*)contex;
+    srv->StartHeartBeat();
+    pthread_exit(NULL);
 }
 
-void ServiceReg::StopHeartThead()
+int ServiceReg::StartHeartThead()
+{
+    int res = pthread_create(&heart_thread_, NULL, thread_function, this);
+    if(res != 0)
+    {
+        LOG_ERROR("StartHeartThead: create heartbeat thread failed");
+    }
+    return res;
+}
+
+int ServiceReg::StopHeartThead()
 {
     heart_status_ = false;
-    if(heart_thread_.joinable())
+    int res = pthread_join(heart_thread_, NULL);
+    if(res != 0)
     {
-        heart_thread_.join();
-        LOG_INFO("StopHeartThead: heart beat has stoped!");
+        LOG_ERROR("StopHeartThead: heartbeat thread join failed");
+        return res;
     }
+    LOG_INFO("StopHeartThead: heartbeat thread has been joined");
+    return res;
 }
+
+bool ServiceReg::ReregisterService()
+{
+    bool res = false;
+    do
+    {
+        res = RegistToConfSrv();
+        if(res)
+        {
+            break;
+        }
+        else
+        {
+            LOG_ERROR("ReregisterService: register to configure service failed. sleep 60S...");
+            sleep(60);
+        }
+    }while(true);
+
+    return true;
+}
+
 
 void ServiceReg::StartHeartBeat()
 {
+    LOG_INFO("StartHeartBeat: heartbeat thread start...");
     bool res = false;
     int i = 0;
     while(heart_status_)
     {
-        if(i == 2)
+        if(i == 3)
         {
-            break;
+            LOG_WARN("StartHeartBeat: heartbeat failed. begin re-register service...");
+            ReregisterService();
+            LOG_INFO("StartHeartBeat: re-register service success.");
         }
         res = HeartBeat();
         if(!res)
@@ -385,18 +463,14 @@ void ServiceReg::StartHeartBeat()
         sleep(3);
     }
 
-    if(i == 2 && heart_status_ == true)
-    {
-        LOG_ERROR("StartHeartBeat: heart beat failed");
-        //重启服务
-    }
+    LOG_INFO("StartHeartBeat: heartbeat thread end.");
     return;
 }
 
 bool ServiceReg::HeartBeat()
 {
     bool ret = true;
-    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), stoul(server_port_)));
+    boost::shared_ptr<TSocket> socket(new TSocket(server_ip_.c_str(), atoll(server_port_.c_str())));
     socket->setConnTimeout(1000 * 5);
     boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));
     boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));

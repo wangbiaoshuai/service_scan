@@ -3,7 +3,7 @@
 
 #include <map>
 #include <string>
-#include <mutex>
+#include "mutex.h"
 
 namespace cems{ namespace service{ namespace scan{
 
@@ -34,7 +34,7 @@ private:
 private:
     std::string config_file_;
     std::map<std::string, std::string> m_configure_;
-    std::mutex mutex_file_;
+    Mutex mutex_file_;
 
 };
 }}}
