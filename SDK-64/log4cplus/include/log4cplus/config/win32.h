@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2017 Tad E. Smith
+// Copyright 2003-2015 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -141,6 +141,10 @@
 #  define LOG4CPLUS_USE_WIN32_THREADS
 #endif
 
+#if defined (_WIN32_WINNT) && _WIN32_WINNT < 0x0600
+#  define LOG4CPLUS_POOR_MANS_SHAREDMUTEX
+#endif
+
 #if defined(_MSC_VER)
   // Warning about: identifier was truncated to '255' characters in the debug information
 #  pragma warning( disable : 4786 )
@@ -153,7 +157,18 @@
 #    define LOG4CPLUS_WORKING_LOCALE
 #    define LOG4CPLUS_HAVE_FUNCTION_MACRO
 #    define LOG4CPLUS_HAVE_FUNCSIG_MACRO
+#    define LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
 #    define LOG4CPLUS_ATTRIBUTE_NORETURN __declspec(noreturn)
+#  endif
+#  if _MSC_VER >= 1700
+#    define LOG4CPLUS_HAVE_CXX11_ATOMICS
+#  endif
+#  if _MSC_VER >= 1900
+// C++11 threading facilities and synchronization primitives are available
+// already in earlier versions of Visual Studio compiler, however, there are
+// issues with the way mutexes are implemented and using them during process
+// shutdown. This appears to be fixed in Visual Studio 2015 and later.
+#    define LOG4CPLUS_WITH_CXX11_THREADS
 #  endif
 #endif
 
@@ -163,12 +178,26 @@
 #    define LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO
 #    define LOG4CPLUS_HAVE_FUNC_SYMBOL
 #  endif
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+#    if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+#      define LOG4CPLUS_HAVE___SYNC_SUB_AND_FETCH
+#      define LOG4CPLUS_HAVE___SYNC_ADD_AND_FETCH
+#    endif
+#  endif
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#    if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
+#      define LOG4CPLUS_HAVE___ATOMIC_ADD_FETCH
+#      define LOG4CPLUS_HAVE___ATOMIC_SUB_FETCH
+#    endif
 // This has worked for some versions of MinGW with GCC 4.7+ but it
 // appears to be broken again in 4.8.x. Thus, we disable this for GCC
 // completely forever.
 //
-//#  define LOG4CPLUS_INLINES_ARE_EXPORTED
+//#    define LOG4CPLUS_INLINES_ARE_EXPORTED
+#  endif
 #  define LOG4CPLUS_HAVE_FUNCTION_MACRO
+#  define LOG4CPLUS_HAVE_GNU_VARIADIC_MACROS
+#  define LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
 #  if defined (__MINGW32__)
 #    define LOG4CPLUS_WORKING_C_LOCALE
 #  endif
@@ -176,6 +205,7 @@
 
 #if defined (__BORLANDC__) && __BORLANDC__ >= 0x0650
 #  define LOG4CPLUS_HAVE_FUNCTION_MACRO
+#  define LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
 #endif // __BORLANDC__
 
 #if ! defined (LOG4CPLUS_DISABLE_DLL_RUNTIME_WARNING)

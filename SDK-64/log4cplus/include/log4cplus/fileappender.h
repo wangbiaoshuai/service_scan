@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2017 Tad E. Smith
+// Copyright 2001-2015 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ namespace log4cplus
         int reopenDelay;
 
         unsigned long bufferSize;
-        std::unique_ptr<log4cplus::tchar[]> buffer;
+        log4cplus::tchar * buffer;
 
         log4cplus::tofstream out;
         log4cplus::tstring filename;
@@ -397,7 +397,7 @@ namespace log4cplus
         void close();
         void rollover(bool alreadyLocked = false);
         void clean(helpers::Time time);
-        helpers::Time::duration getRolloverPeriodDuration() const;
+        int getRolloverPeriodDuration() const;
         helpers::Time calculateNextRolloverTime(const helpers::Time& t) const;
 
       // Data
@@ -406,8 +406,8 @@ namespace log4cplus
         tstring scheduledFilename;
         int maxHistory;
         bool cleanHistoryOnStart;
-        log4cplus::helpers::Time lastHeartBeat;
-        log4cplus::helpers::Time nextRolloverTime;
+        helpers::Time lastHeartBeat;
+        helpers::Time nextRolloverTime;
         bool rollOnClose;
 
     private:

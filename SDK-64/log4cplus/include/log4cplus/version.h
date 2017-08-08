@@ -1,5 +1,5 @@
 // -*- C++ -*-
-//  Copyright (C) 2010-2017, Vaclav Haisman. All rights reserved.
+//  Copyright (C) 2010-2015, Vaclav Haisman. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -41,10 +41,10 @@
 //! This is log4cplus version number as unsigned integer.  This must
 //! be kept on a single line. It is used by Autotool and CMake build
 //! systems to parse version number.
-#define LOG4CPLUS_VERSION LOG4CPLUS_MAKE_VERSION(2, 0, 0)
+#define LOG4CPLUS_VERSION LOG4CPLUS_MAKE_VERSION(1, 2, 1)
 
 //! This is log4cplus version number as a string.
-#define LOG4CPLUS_VERSION_STR LOG4CPLUS_MAKE_VERSION_STR(2, 0, 0)
+#define LOG4CPLUS_VERSION_STR LOG4CPLUS_MAKE_VERSION_STR(1, 2, 1)
 
 
 namespace log4cplus
