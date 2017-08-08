@@ -17,7 +17,7 @@
 # under the License.
 #
 
-prefix=/thrift_install
+prefix=/install-thrift-0.9.1
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
