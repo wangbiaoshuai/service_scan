@@ -212,9 +212,64 @@ bool CommonServiceHandler::IsValidCrc(const std::string& szCrc, const std::strin
     }
 }
 
+#include <signal.h>
+#include <sys/stat.h>
+int init_daemon(void)
+{
+    int pid;
+    string cur_path = GetCurrentPath();
+
+    //1)屏蔽一些阻断信号
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    //2)后台运行
+    if(pid = fork())
+    {
+        exit(0);
+    }
+    else if(pid < 0)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    //3)脱离控制终端、登录会话和进程组
+    setsid();
+
+    //4)禁止进程重新打开控制终端
+    if(pid = fork())
+    {
+        exit(0);
+    }
+    else if(pid < 0)
+    {
+        perror("fork2");
+        exit(EXIT_FAILURE);
+    }
+
+    //5)关闭打开的文件描述符
+    for(int i = 0; i < NOFILE; i++)
+    {
+        close(i);
+    }
+
+    //6)改变当前工作目录
+    chdir(cur_path.c_str());
+
+    //7)重新设置文件创建掩码
+    umask(0);
+
+    //8)处理SIGCHLD信号
+    signal(SIGCHLD, SIG_IGN);
+    return 0;
+}
 
 int main(int argc, char **argv) 
 {
+    init_daemon();
     INIT_LOG(LOG_CONFIG_PATH);
     LOG_INFO("begin main");
 

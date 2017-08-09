@@ -188,17 +188,6 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
         if(circle_time.empty())
             policy_param.update_time = DEFAULT_UPDATE_TIME;
 
-        /*string key, value;
-        key = "service.serverAreaId";
-        if(ParseConfigure::GetInstance().GetProperty(key, value) && !value.empty())
-        {
-            policy_param.area_id = value;
-        }
-        else
-        {
-            policy_param.area_id = DEFAULT_AREA_ID;
-        }*/
-
     }while(0);
 
     if(!document)

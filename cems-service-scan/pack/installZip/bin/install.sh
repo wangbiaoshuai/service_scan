@@ -23,9 +23,9 @@ chmod u+s  FastScan
 chmod +x   FastScan
 
 #change own
-chown root libMCurl.so
-chgrp root libMCurl.so
-chmod +x   libMCurl.so
+#chown root libMCurl.so
+#chgrp root libMCurl.so
+#chmod +x   libMCurl.so
 
 #sh exec
 chmod +x   restart.sh
@@ -54,13 +54,6 @@ chkconfig --add  CEMS-SERVICE-SCAN
 
 #start service
 service CEMS-SERVICE-SCAN start
-
-echo ""
-
-text="wait service start..."
-echo "${text}"
-
-sleep 1
 
 c=$(netstat -anp | grep LISTEN | grep 10100 | wc -l)
 if [ $c -lt 1 ]

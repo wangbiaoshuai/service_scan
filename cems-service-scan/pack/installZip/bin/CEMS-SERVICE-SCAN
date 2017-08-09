@@ -34,21 +34,42 @@
 . /etc/rc.d/init.d/functions
 
 ServiceName=CEMS-SERVICE-SCAN
-DAEMON=/usr/local/service/CEMS-SERVICE-SCAN/bin/FastScan 
+DAEMON_DIR="/usr/local/service/CEMS-SERVICE-SCAN/bin"
+DAEMON="$DAEMON_DIR/FastScan"
 
 RETVAL=0
 
+function is_runing()
+{
+    pid=$(pgrep FastScan)
+    if [ "$pid" != "" ] 
+    then
+        return 0
+    fi
+    return 1
+}
+
 start () {
 	# start daemon
-	echo -n $"Starting $ServiceName: "
-	daemon nohup  $DAEMON >/dev/null 2>&1 &
-	RETVAL=$?
+    [ -d "$DAEMON_DIR" ] && cd $DAEMON_DIR
+	echo -n $"Starting $ServiceName..."
+	$DAEMON
+    RETVAL=$?
+    sleep 1
+    is_runing
+    if [ "$?" = "0" ]
+    then
+        echo -e "\e[1;32mStart success!\e[0m"
+    else
+        echo -e "\e[1;31mStart failed!\e[0m"
+    fi
 }
 
 stop () {
 	# stop daemon
 	echo -n $"Stopping $ServiceName: "
 	killproc $DAEMON
+    echo
 	RETVAL=$?
 }
 
@@ -61,16 +82,16 @@ status() {
 		local result
 		echo "check status of ${ServiceName}..."
 
-		result = $( ps -ef | grep FastScan )
+		result=$(pgrep FastScan)
 
-		if [ [$result >  0] ] ;  then
-
-			echo "${ServiceName} is up"
+		if [ "$result" != "" ]
+        then
+			echo -e "\e[1;32m${ServiceName} is up\e[0m"
 
 			RETVAL=0
 
 		else
-			echo "${ServiceName} is down"
+			echo -e "\e[1;31m${ServiceName} is down\e[0m"
 
 			RETVAL=1
 
