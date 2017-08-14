@@ -150,6 +150,7 @@ typedef std::list<MAP_COMMON> LIST_KEYS;
 #define SERVICE_CODE_TOPO       "00010200"          //拓扑服务
 #define MINCODE_CENTER          "2100"                  
 #define MINCODE_BLOCK           "2100"
+#define MINCODE_SNMP        "2101"             //snmp扫描
 
 #define SERVICE_CODE_ADDRESS	"00FF0600"	    //地址服务
 #define MINCODE_ADDRESS_AREAID		"8"		    //获取AreaId

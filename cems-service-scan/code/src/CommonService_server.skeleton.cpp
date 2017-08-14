@@ -214,7 +214,7 @@ bool CommonServiceHandler::IsValidCrc(const std::string& szCrc, const std::strin
 
 #include <signal.h>
 #include <sys/stat.h>
-int init_daemon(void)
+int init_daemon(void)  //创建守护进程
 {
     int pid;
     string cur_path = GetCurrentPath();

@@ -10,6 +10,7 @@
 #include "service_reg.h"
 #include "json/json.h"
 #include "common_function.h"
+#include "SnmpScan.h"
 
 namespace cems{ namespace service{ namespace scan{
 using namespace std;
@@ -50,8 +51,22 @@ FastScan::~FastScan()
 
 void* start_scan_function(void* context)
 {
+    string key = "service.mode";
+    string mode;
+    if(ParseConfigure::GetInstance().GetProperty(key, mode) == false)
+    {
+        mode = "0";  //0是标准模式，1是适配国网项目
+    }
+    LOG_INFO("start_scan_function: serivce mode="<<mode);
     FastScan* ctx = (FastScan*)context;
-    ctx->StartScan();
+    if(mode == "0")
+    {    
+        ctx->StartScan();
+    }
+    else
+    {
+        ctx->StartSnmpTransmit();
+    }
     LOG_INFO("Scan thread stoped.");
     pthread_exit(NULL);
 }
@@ -165,6 +180,18 @@ int FastScan::ParseIpRange(const string& ip_range, MAP_STRING& range)
     return (int)range.size();
 }
 
+int FastScan::StartSnmpTransmit()
+{
+    SnmpScan pscan;
+    string szIp = GetCurrentIp();
+    int port = SSL_PORT;
+    string szCertName = CERTIFICATE_FILE;
+    string szPrivKey = PRIVATEKEY_FILE;
+
+    pscan.init((char*)szIp.c_str(), port , (char*)szCertName.c_str(), (char*)szPrivKey.c_str());
+    pscan.run();
+    return 0;
+}
 
 int FastScan::StartScan()
 {

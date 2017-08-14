@@ -36,6 +36,7 @@ if [ $input == y ] ; then
 	COUNT=`ps -ef | grep $procName | grep -v "grep"|wc -l `
 if [ $COUNT -lt 1 ]; then
 	echo "卸载 $serviceName 成功"
+    rm -rf "/usr/local/service/$serviceName"
 	exit $exitCode
 else
 	echo "卸载 $serviceName 失败"

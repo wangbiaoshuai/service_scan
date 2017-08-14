@@ -22,7 +22,7 @@ LIBS = -Wl,-R,"../lib" \
 CXX = g++
 CXXFLAGS = -O1 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT
 PROJECT = FastScan
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/DetectHost.o .build/upreport.o .build/conv.o .build/parse_policy.o
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/DetectHost.o .build/upreport.o .build/conv.o .build/parse_policy.o .build/SnmpScan.o .build/SnmpReport.o
 
 all: foremost ${PROJECT}
 
@@ -82,6 +82,12 @@ ${PROJECT}: ${OBJECTS}
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 .build/parse_policy.o: src/parse_policy.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/SnmpScan.o: src/SnmpScan.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/SnmpReport.o: src/SnmpReport.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 

@@ -11,6 +11,10 @@ typedef std::map<std::string, std::string> MAP_STRING;
 #define MINCODE_SCAN_POLICY         "1000"                    //服务策略更新接口
 #define MINCODE_SCAN_NOTIFY         "1001"          //服务区域发生变化，重新注册
 
+#define SSL_PORT    7838
+#define CERTIFICATE_FILE "../config/cacert.pem"
+#define PRIVATEKEY_FILE "../config/privkey.pem"
+
 class FastScan
 {
 public:
@@ -20,6 +24,7 @@ public:
     int Start();
     int Stop();
  
+    int StartSnmpTransmit();
     int StartScan();
     int StartUpdatePolicy();
 
