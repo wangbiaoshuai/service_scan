@@ -201,7 +201,7 @@ void ParseConfigure::UpdateConfigFile(const string& key, const string& value, bo
         if(!flush)
             break;
 
-        ofstream outfile(config_file_.c_str());
+        ofstream outfile(config_file_.c_str(), ios::out|ios::binary);
         if(!outfile)
             break;
 
@@ -231,7 +231,7 @@ void ParseConfigure::AppendToConfigFile(const string& key, const string& value, 
         if(!flush)
             break;
 
-        ofstream outfile(config_file_.c_str(), ios::out|ios::app);
+        ofstream outfile(config_file_.c_str(), ios::out|ios::app|ios::binary);
         if(!outfile)
             break;
 
