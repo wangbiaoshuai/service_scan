@@ -506,11 +506,12 @@ bool ServiceReg::HeartBeat()
 
 std::string ServiceReg::GenericSSID()
 {
-    std::string sid;
-    time_t now;
-    localtime(&now);
+    string sid;
+    timeval tv;
+    gettimeofday(&tv, NULL);
+    long time = tv.tv_sec * 1000 * 1000 + tv.tv_usec;
     char buffer[100] = {0};
-    sprintf(buffer, "%ld", now);
+    sprintf(buffer, "%ld", time);
     sid = GetStrMd5((char*)buffer, strlen(buffer));
     return sid;
 }
