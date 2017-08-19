@@ -102,3 +102,6 @@ package:
 	cp -r ./config ../pack/installZip
 	cp -r ./bin ../pack/installZip
 	cd ../pack/; rm -rf CEMS-SERVICE-SCAN.zip; cp -r installZip CEMS-SERVICE-SCAN; zip -r CEMS-SERVICE-SCAN.zip CEMS-SERVICE-SCAN; rm -rf CEMS-SERVICE-SCAN; cd -
+
+upgrade:
+	cd ../pack; rm -rf CEMS-SERVICE-SCAN.zip; cp -r upgradeZip CEMS-SERVICE-SCAN; zip -r CEMS-SERVICE-SCAN.zip CEMS-SERVICE-SCAN; rm -rf CEMS-SERVICE-SCAN; cd -
