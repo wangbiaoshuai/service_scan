@@ -67,10 +67,17 @@ start () {
 
 stop () {
 	# stop daemon
-	echo -n $"Stopping $ServiceName: "
-	killproc $DAEMON
-    echo
-	RETVAL=$?
+    is_runing
+    if [ "$?" = "0" ]
+    then
+        pgrep FastScan | xargs -t -I{} kill -9 {} 1>&2 2>/dev/null
+    else
+        echo -e "\e[1;32m$ServiceName has stoped!\e[0m"
+        return 0
+    fi
+
+    echo -e "\e[1;32m$ServiceName stop success!\e[0m"
+    return 0
 }
 
 restart() {
