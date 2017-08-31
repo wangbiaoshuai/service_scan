@@ -84,7 +84,8 @@ bool ServiceReg::ReadConfig()
 
     key = "service.description";
     service_bean_.__isset.description = true;
-    ParseConfigure::GetInstance().GetProperty(key, service_bean_.description);
+    service_bean_.description = SERVICE_SCAN_DESC;
+    //ParseConfigure::GetInstance().GetProperty(key, service_bean_.description);
 
     time_t timer = time(NULL);
     service_bean_.__isset.installTime = true;
