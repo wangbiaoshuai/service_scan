@@ -6,6 +6,7 @@
 #include "common_function.h"
 #include "json/json.h"
 #include "conv.h"
+#include "arp.h"
 
 #include <netinet/ip_icmp.h>
 
@@ -341,6 +342,9 @@ bool recvPingPack(int sock)
                     device.szRegOrgId = g_szOrgId;
                     device.szFireWall = "2";
                     device.count = 0;
+                    string mac;
+                    get_mac_addr(ip, mac);
+                    device.szMac = mac;
 
                     g_mapPing.insert(mapDev::value_type(uip, device));
 
