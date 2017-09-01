@@ -34,11 +34,8 @@ using namespace std;
 #define fill_buf "aaaaaaaaaaaa"
 int socket_id;
 char *target = NULL;
-int send_count = 0;
-int recv_count = 0;
 struct in_addr  src, dst;
 struct sockaddr_ll   me, he;
-struct timeval   send_time, recv_time;
 struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
 {
     struct sockaddr_in saddr;
@@ -159,12 +156,24 @@ create_pkt(unsigned char * buf, struct in_addr src, struct in_addr dst, struct s
 }
 void send_pkt()
 {
+    int send_count = 0;
     unsigned char send_buf[256];
     int pkt_size = create_pkt(send_buf, src, dst, &me, &he);
-    gettimeofday(&send_time, NULL);
-    int cc = sendto(socket_id, send_buf, pkt_size, 0, (struct sockaddr*)&he, sizeof(he));
-    if (cc == pkt_size)
-        send_count++;
+    if(pkt_size <= 0)
+        return;
+    do
+    {
+        int cc = sendto(socket_id, send_buf, pkt_size, 0, (struct sockaddr*)&he, sizeof(he));
+        if (cc == pkt_size)
+        {
+            break;
+        }
+        else
+        {
+            send_count++;
+        }
+    }while(send_count < 4);
+    return;
 }
 int chk_recv_pkt(unsigned char * buf, struct sockaddr_ll * FROM)//解析arp数据
 {
@@ -214,14 +223,15 @@ int get_mac_addr(const std::string& ip, std::string& mac)
 
     socket_id = socket_init();
     LOG_DEBUG("arping "<<target<<" from "<<inet_ntoa(src)<<" "<<device);
-    send_pkt();
 
+    int ret = -1;
+    int recv_count = 0;
     do 
     {
         struct sockaddr_ll from;
         int alen = sizeof(from);
         char recv_buf[0x1000];
-
+        send_pkt();
         int recv_size = recvfrom(socket_id, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *)&from, (socklen_t*)&alen);
 
         if (recv_size < 0) 
@@ -229,6 +239,7 @@ int get_mac_addr(const std::string& ip, std::string& mac)
             LOG_ERROR("get_mac_addr: recvfrom "<<strerror(errno));
             return -1;;
         }
+        
         if (chk_recv_pkt((unsigned char*)recv_buf, &from) > 0) 
         {
             memcpy(he.sll_addr, from.sll_addr, he.sll_halen);
@@ -236,15 +247,16 @@ int get_mac_addr(const std::string& ip, std::string& mac)
             sprintf(buffer, "%02X-%02X-%02X-%02X-%02X-%02X", from.sll_addr[0], from.sll_addr[1], from.sll_addr[2], from.sll_addr[3], from.sll_addr[4], from.sll_addr[5]);
             mac = buffer;
             LOG_DEBUG("get "<<target<<" mac: "<<mac.c_str());
+            ret = 0;
+            break;
         }
         else
         {
-            LOG_ERROR("get_mac_addr: parse package failed.");
-            return -1;
+            recv_count++; 
         }
-    }while(0);
+    }while(recv_count < 4);
 
-    return 0;
+    return ret;
 }
 
 /*int main(void)

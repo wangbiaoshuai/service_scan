@@ -19,8 +19,8 @@ chown root FastScan
 chgrp root FastScan
 
 #super manager
-chmod u+s  FastScan
 chmod +x   FastScan
+chmod u+s  FastScan
 
 #change own
 #chown root libMCurl.so
