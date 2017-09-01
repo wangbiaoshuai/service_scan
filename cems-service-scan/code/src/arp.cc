@@ -39,7 +39,7 @@ int recv_count = 0;
 struct in_addr  src, dst;
 struct sockaddr_ll   me, he;
 struct timeval   send_time, recv_time;
-struct in_addr get_src_ip(char * devices)//获得本机相应网卡的ip
+struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
 {
     struct sockaddr_in saddr;
     int sock_id = socket(AF_INET, SOCK_DGRAM, 0);//设置数据报socket
@@ -75,7 +75,7 @@ struct in_addr get_src_ip(char * devices)//获得本机相应网卡的ip
     close(sock_id);
     return saddr.sin_addr;
 }
-int check_device(char* if_dev, int ss)//网卡和socket    将网卡设置为混杂模式？
+int check_device(const char* if_dev, int ss)//网卡和socket    将网卡设置为混杂模式？
 {
     int ifindex;
     struct ifreq ifr;
