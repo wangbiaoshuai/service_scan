@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<thriftBean selectorThreads="2" workerThreads="400"/>
+	<logBean logLevel="ERROR" logPath="../logs/Sys.log"/>
+	<params>
+		<paramBean key="intervalTime" value="60"/>
+		<paramBean key="ipRange" value="ipRange">
+			<param>
+				<ip/>
+				<orgId/>
+			</param>
+		</paramBean>
+	</params>
+	<timers>
+		<timerBean>
+			<name>PolicyXmlJob</name>
+			<group>PolicyXmlGroup</group>
+			<trigger>PolicyXmlTrigger</trigger>
+			<cycle>0 0 0/5 * * ?</cycle>
+		</timerBean>
+	</timers>
+</root>
