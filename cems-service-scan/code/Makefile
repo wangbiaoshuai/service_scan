@@ -1,5 +1,5 @@
 SDK_PATH = ../../SDK-64
-THRIFT_PATH = ${SDK_PATH}/thrift-0.9.0
+THRIFT_PATH = ${SDK_PATH}/thrift-0.9.1
 LOG_PATH = ${SDK_PATH}/log4cplus
 JSON_PATH = ${SDK_PATH}/jsoncpp
 TINYXML_PATH = ${SDK_PATH}/tinyxml
@@ -17,11 +17,12 @@ LIBS = -Wl,-R,"../lib" \
 	   -L${LOG_PATH}/lib -llog4cplus \
 	   -L${JSON_PATH}/lib -ljson \
 	   -L${TINYXML_PATH}/lib -ltinyxml \
-	   -L./lib -lconfig_service_export -lvrv_service_export
+	   -L./lib -lconfig_service_export -lvrv_service_export \
+	   -lssl -lcrypto
 
 CXX = g++
 CXXFLAGS = -O1 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT
-PROJECT = FastScan
+PROJECT = cemsscan
 OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/DetectHost.o .build/upreport.o .build/conv.o .build/parse_policy.o .build/SnmpScan.o .build/SnmpReport.o .build/arp.o
 
 all: foremost ${PROJECT}

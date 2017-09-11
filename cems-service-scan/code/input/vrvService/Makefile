@@ -1,6 +1,9 @@
-INCLUDE = 
+SDK_DIR = ../../../../SDK-64
+THRIFT_DIR = ${SDK_DIR}/thrift-0.9.1
 
-LIB = -lthrift-0.9.1
+INCLUDE = -I${THRIFT_DIR}/include
+
+LIB = -L${THRIFT_DIR}/lib -lthrift-0.9.1
 
 CXXFLAGS = -O2 -m64 $(INCLUDE) -fPIC
 
