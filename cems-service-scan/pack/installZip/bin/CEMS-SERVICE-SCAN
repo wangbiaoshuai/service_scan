@@ -35,13 +35,13 @@
 
 ServiceName=CEMS-SERVICE-SCAN
 DAEMON_DIR="/usr/local/service/CEMS-SERVICE-SCAN/bin"
-DAEMON="$DAEMON_DIR/FastScan"
+DAEMON="$DAEMON_DIR/cemsscan"
 
 RETVAL=0
 
 function is_runing()
 {
-    pid=$(pgrep FastScan)
+    pid=$(pgrep cemsscan)
     if [ "$pid" != "" ] 
     then
         return 0
@@ -70,7 +70,7 @@ stop () {
     is_runing
     if [ "$?" = "0" ]
     then
-        pgrep FastScan | xargs -t -I{} kill -9 {} 1>&2 2>/dev/null
+        pgrep cemsscan | xargs -t -I{} kill -9 {} 1>&2 2>/dev/null
     else
         echo -e "\e[1;32m$ServiceName has stoped!\e[0m"
         return 0
@@ -89,7 +89,7 @@ status() {
 		local result
 		echo "check status of ${ServiceName}..."
 
-		result=$(pgrep FastScan)
+		result=$(pgrep cemsscan)
 
 		if [ "$result" != "" ]
         then
