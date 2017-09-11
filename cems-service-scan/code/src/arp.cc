@@ -32,10 +32,12 @@ using namespace std;
 
 #define device "eth0"                //本机的哪块网卡
 #define fill_buf "aaaaaaaaaaaa"
-int socket_id;
-char *target = NULL;
-struct in_addr  src, dst;
-struct sockaddr_ll   me, he;
+static int socket_id;
+static char *target = NULL;
+static struct in_addr  src, dst;
+static struct sockaddr_ll   me, he;
+static std::string local_ip("");
+
 struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
 {
     struct sockaddr_in saddr;
@@ -213,12 +215,16 @@ int get_mac_addr(const std::string& ip, std::string& mac)
         }
         memcpy(&dst, hp->h_addr, 4);
     }
-    
-    src = get_src_ip(device);//获得本机device网卡的ip
-    if (!src.s_addr) 
+   
+    if(local_ip.empty())
     {
-        LOG_ERROR("get_mac_addr: no source address in not-DAD node");
-        return -1;
+        src = get_src_ip(device);//获得本机device网卡的ip
+        if (!src.s_addr) 
+        {
+            LOG_ERROR("get_mac_addr: no source address in not-DAD node");
+            return -1;
+        }
+        local_ip = inet_ntoa(src);
     }
 
     socket_id = socket_init();

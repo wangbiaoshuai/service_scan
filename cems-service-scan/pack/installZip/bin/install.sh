@@ -15,12 +15,12 @@ chkconfig --del CEMS-SERVICE-SCAN >/dev/null 2>&1 &
 #change file property
 
 #own group change to root
-chown root FastScan
-chgrp root FastScan
+chown root cemsscan
+chgrp root cemsscan
 
 #super manager
-chmod +x   FastScan
-chmod u+s  FastScan
+chmod +x   cemsscan
+chmod u+s  cemsscan
 
 #change own
 #chown root libMCurl.so
