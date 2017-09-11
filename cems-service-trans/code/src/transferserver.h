@@ -1,0 +1,123 @@
+#ifndef _MATCHSERVER_H
+#define _MATCHSERVER_H
+
+#include <cstdlib>
+#include <iostream>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <string>
+#include <map>
+#include <list>
+#include "common.h"
+#include "matchmsg.h"
+#include "log/util_log.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+using boost::asio::ip::tcp;
+using namespace std;
+
+#define TIMEOUT_COUNT 45
+
+namespace transfer
+{
+  typedef struct _MATCH_INFO
+  {
+    int life_counter; //when > TIMEOUT,delete this match info
+    bool is_matched;
+    string dst_ip; //destination ip of transfer data
+    tcp::socket* socket_ptr;
+    string ip;
+    unsigned int header_flag;
+    unsigned int header_version;
+    unsigned int header_msgcode;
+    unsigned int header_maxcode;
+    unsigned int header_mincode; 
+    unsigned short header_type;
+    unsigned short header_count;
+    unsigned short header_index;
+    string session_id;
+    string src_device_id;
+    string dst_device_id;
+    string device_type;
+    _MATCH_INFO()
+    {
+      life_counter = 0;
+      socket_ptr = NULL;
+      is_matched = false;
+      header_flag = 0;
+      header_version = 0;
+      header_msgcode = 0;
+      header_maxcode = 0;
+      header_mincode = 0;
+      header_type = 0;
+      header_count = 0;
+      header_index = 0;
+    }
+  } MATCH_INFO,*PMATCH_INFO;
+
+  class session
+  {
+  public:
+    session(boost::asio::io_service& io_service);
+    ~session();
+    tcp::socket& socket();
+    void start();
+
+  private:
+    bool is_exist_in_map(const string key);
+    bool is_exist_in_map(const MATCH_INFO &matchinfo);
+    void restart_ismatched_timer(unsigned int second);
+    void restart_session_timer(unsigned int second);
+    void handle_check_ismatched(const boost::system::error_code& error);
+    void check_ismatched();
+    void handle_check_session(const boost::system::error_code& error);
+    void check_session();
+    void write_response(bool result,unsigned int maxcode,unsigned int mincode,string description);
+    void delete_matchinfo();
+
+    void read_data();
+    void read_matchmsg_header();
+    void read_matchmsg_body(char* body_ptr,int body_len);
+    void parse_matchmsg_header(const boost::system::error_code& error,
+        size_t bytes_transferred);
+    void parse_matchmsg_body(char* body_ptr,int body_len,const boost::system::error_code& error,
+        size_t bytes_transferred);
+    bool try_match(MATCH_INFO matchinfo);
+    // void handle_receive(const boost::system::error_code& error,
+        // size_t bytes_transferred);
+    void handle_read(const boost::system::error_code& error,
+        size_t bytes_transferred);
+    void handle_write(const boost::system::error_code& error);
+    void handle_write_header(const boost::system::error_code& error);
+    void handle_write_body(const boost::system::error_code& error);
+
+  private:
+    string map_key_;
+    tcp::socket socket_;
+    bool is_reduplicate_; //check if matchinfo is same completely,if same,delete self
+    char *header_;
+    enum { max_length = 1024 };
+    char data_[max_length];
+    string response_str_;
+    boost::asio::deadline_timer ismatched_checktimer_;
+    boost::asio::deadline_timer session_checktimer_;
+  };
+
+  class server
+  {
+  public:
+    server(boost::asio::io_service& io_service, short port);
+
+  private:
+    void start_accept();
+    void handle_accept(session* new_session,
+        const boost::system::error_code& error);
+
+  private:
+    boost::asio::io_service& io_service_;
+    tcp::acceptor acceptor_;
+  };
+}
+
+#endif

@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# chkconfig: 35 90 12
+# description: transfer server
+#
+# Get function from functions library
+. /etc/init.d/functions
+# Start the service
+start() {
+        #initlog -c "echo -n Starting CEMS-SERVICE-TRANS: "
+        cd /usr/local/service/CEMS-SERVICE-TRANS/bin/
+        /usr/local/service/CEMS-SERVICE-TRANS/bin/CEMS.SERVICE.TRANS &
+        ### Create the lock file ###
+        touch /var/lock/subsys/transferservice
+        success $"CEMS-SERVICE-TRANS server startup"
+        echo
+}
+# Restart the service 
+stop() {
+        #initlog -c "echo -n Stopping CEMS-SERVICE-TRANS: "
+        killall transferServer 
+        killall CEMS.SERVICE.TRANS
+        ### Now, delete the lock file ###
+        rm -f /var/lock/subsys/transferservice
+        echo
+}
+### main logic ###
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status CEMS.SERVICE.TRANS
+        ;;
+  restart|reload|condrestart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|status}"
+        exit 1
+esac
+exit 0
