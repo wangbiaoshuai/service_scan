@@ -170,7 +170,7 @@ void SnmpScan::work(int new_fd)
             pthread_attr_t attr;
             pthread_attr_init(&attr);
             pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-            int rc = pthread_create(&tid, NULL, SendProc, (void*)pparam);
+            int rc = pthread_create(&tid, &attr, SendProc, (void*)pparam);
             if(rc != 0)
             {
                 //printf("thread create failed");
