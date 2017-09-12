@@ -1,6 +1,7 @@
 #!/bin/sh
 
 CONF_FILE=../config/config.properties
+SERVICE_IP=""
 SERVER_IP=""
 
 function check_device()
@@ -9,8 +10,8 @@ function check_device()
     array_dev=("$devices")
     if [ "${#array_dev[*]}" -eq 1 ]
     then
-        SERVER_IP="$devices"
-        echo "server ip: $SERVER_IP"
+        SERVICE_IP="$devices"
+        echo "service ip: $SERVICE_IP"
         return 0
     fi
 
@@ -23,17 +24,24 @@ function check_device()
     done
     echo -n "请选择相应网卡[0-${#array_dev[*]}]:"
     read num
-    SERVER_IP=${array_dev[$num]}
-    echo "server ip: $SERVER_IP"
+    SERVICE_IP=${array_dev[$num]}
+    echo "service ip: $SERVICE_IP"
     return 0
 }
 
 function configure()
 {
+    echo -n "请输入服务器ip:"
+    read SERVER_IP
+    if [ "$SERVER_IP" = "" ]
+    then
+        SERVER_IP="$SERVICE_IP"
+    fi
+
     if [ -f "$CONF_FILE" ]
     then
         \sed -i "/^server\.ip/s/=.*/=$SERVER_IP/" $CONF_FILE
-        \sed -i "/^service\.ip/s/=.*/=$SERVER_IP/" $CONF_FILE
+        \sed -i "/^service\.ip/s/=.*/=$SERVICE_IP/" $CONF_FILE
     fi
 }
 
