@@ -3,24 +3,29 @@
 #	read serviceName
 #	echo "#### you input serviceName is [$serviceName] ####"
 
-text="install CEMS-SERVICE-SCAN service"
+service_name="CEMS-SERVICE-SCAN"
+service_path="/usr/local/service"
+proc_name="cemsscan"
+service_port=10100
+
+text="install $service_name service"
 #echo "${text}"
 
 #stop service
-service CEMS-SERVICE-SCAN stop >/dev/null 2>&1 &
+service $service_name stop >/dev/null 2>&1 &
 
 sleep 1
 
-chkconfig --del CEMS-SERVICE-SCAN >/dev/null 2>&1 &
+chkconfig --del $service_name >/dev/null 2>&1 &
 #change file property
 
 #own group change to root
-chown root cemsscan
-chgrp root cemsscan
+chown root $proc_name
+chgrp root $proc_name
 
 #super manager
-chmod +x   cemsscan
-chmod u+s  cemsscan
+chmod +x   $proc_name
+chmod u+s  $proc_name
 
 #change own
 #chown root libMCurl.so
@@ -32,35 +37,35 @@ chmod +x   restart.sh
 chmod +x   self.sh
 
 #change own group
-chown root CEMS-SERVICE-SCAN
-chgrp root CEMS-SERVICE-SCAN
+chown root $service_name
+chgrp root $service_name
 
 #all user exec
-chmod 755  CEMS-SERVICE-SCAN
+chmod 755  $service_name
 chmod 666  ../config/policy.xml
 
 
-rm -rf /etc/init.d/CEMS-SERVICE-SCAN
+rm -rf /etc/init.d/$service_name
 
-ln -s /usr/local/service/CEMS-SERVICE-SCAN/bin/CEMS-SERVICE-SCAN  /etc/init.d/CEMS-SERVICE-SCAN
+ln -s /usr/local/service/$service_name/bin/$service_name  /etc/init.d/$service_name
 
-chmod 755 /etc/init.d/CEMS-SERVICE-SCAN
+chmod 755 /etc/init.d/$service_name
 
 #all user rw
 chmod 666  ../config/config.properties
 
 #add service
-chkconfig --add  CEMS-SERVICE-SCAN 
+chkconfig --add  $service_name
 
 #start service
-service CEMS-SERVICE-SCAN start
+service $service_name start
 
-c=$(netstat -anp | grep LISTEN | grep 10100 | wc -l)
+c=$(netstat -anp | grep LISTEN | grep ${service_port} | wc -l)
 if [ $c -lt 1 ]
 then
-  ## restart scan service
+  ## restart service
   echo ""
-  echo "service listen port 10100 faild!"
+  echo "service listen port ${service_port} faild!"
 else
   echo ""
   echo "install complete!"
