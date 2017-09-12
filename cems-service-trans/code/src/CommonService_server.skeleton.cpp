@@ -176,6 +176,7 @@ int init_daemon(void)  //创建守护进程
     return 0;
 }
 
+extern int StartTrans();
 int main(int argc, char **argv) 
 {
     init_daemon();
@@ -186,6 +187,11 @@ int main(int argc, char **argv)
     if(service_reg.Start() == false)
     {
         LOG_ERROR("main: register serivce start failed");
+        return -1;
+    }
+    if(StartTrans() != 0)
+    {
+        LOG_ERROR("main: StartTrans failed.");
         return -1;
     }
 

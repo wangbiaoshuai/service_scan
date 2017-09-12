@@ -18,12 +18,12 @@ LIBS = -Wl,-R,"../lib" \
 	   -L${JSON_PATH}/lib -ljson \
 	   -L${TINYXML_PATH}/lib -ltinyxml \
 	   -L./lib -lconfig_service_export -lvrv_service_export \
-	   -lssl -lcrypto
+	   -lssl -lcrypto -lboost_system
 
 CXX = g++
 CXXFLAGS = -O1 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT
-PROJECT = cemsscan
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o 
+PROJECT = cemstrans
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o .build/start_trans.o .build/matchmsg.o .build/transferserver.o 
 
 all: foremost ${PROJECT}
 
@@ -73,10 +73,19 @@ ${PROJECT}: ${OBJECTS}
 .build/conv.o: src/conv.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
+.build/start_trans.o: src/start_trans.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/matchmsg.o: src/matchmsg.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+	
+.build/transferserver.o: src/transferserver.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
 
 .PHONY:clean
 clean:
-	$(RM) -r $(PROJECT) .build CEMS-SERVICE-SCAN.zip ./bin ./logs/Sys.log
+	$(RM) -r $(PROJECT) .build CEMS-SERVICE-TRANS.zip ./bin ./logs/Sys.log
 	$(MAKE) -C input/configService clean
 	$(MAKE) -C input/vrvService clean
 
@@ -84,8 +93,8 @@ package:
 	cp -r ./lib ../pack/installZip
 	cp -r ./config ../pack/installZip
 	cp -r ./bin ../pack/installZip
-	cd ../pack/; rm -rf CEMS-SERVICE-SCAN.zip; cp -r installZip CEMS-SERVICE-SCAN; zip -r CEMS-SERVICE-SCAN.zip CEMS-SERVICE-SCAN; rm -rf CEMS-SERVICE-SCAN; cd -
+	cd ../pack/; rm -rf CEMS-SERVICE-TRANS.zip; cp -r installZip CEMS-SERVICE-TRANS; zip -r CEMS-SERVICE-TRANS.zip CEMS-SERVICE-TRANS; rm -rf CEMS-SERVICE-TRANS; cd -
 
 upgrade:
 	cp -r ./bin ../pack/upgradeZip
-	cd ../pack; rm -rf CEMS-SERVICE-SCAN.zip; cp -r upgradeZip CEMS-SERVICE-SCAN; zip -r CEMS-SERVICE-SCAN.zip CEMS-SERVICE-SCAN; rm -rf CEMS-SERVICE-SCAN; cd -
+	cd ../pack; rm -rf CEMS-SERVICE-TRANS.zip; cp -r upgradeZip CEMS-SERVICE-TRANS; zip -r CEMS-SERVICE-TRANS.zip CEMS-SERVICE-TRANS; rm -rf CEMS-SERVICE-TRANS; cd -

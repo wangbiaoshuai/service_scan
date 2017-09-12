@@ -10,7 +10,6 @@
 #include <list>
 #include "common.h"
 #include "matchmsg.h"
-#include "log/util_log.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 

@@ -1,46 +1,140 @@
-#!/bin/bash
+#!/bin/sh
 #
-# chkconfig: 35 90 12
-# description: transfer server
+# "$Id: cups.sh,v 1.10 2014/11/12 9:15:16 MJD $"
 #
-# Get function from functions library
-. /etc/init.d/functions
-# Start the service
-start() {
-        #initlog -c "echo -n Starting CEMS-SERVICE-TRANS: "
-        cd /usr/local/service/CEMS-SERVICE-TRANS/bin/
-        /usr/local/service/CEMS-SERVICE-TRANS/bin/CEMS.SERVICE.TRANS &
-        ### Create the lock file ###
-        touch /var/lock/subsys/transferservice
-        success $"CEMS-SERVICE-TRANS server startup"
-        echo
+#   Startup/shutdown script for the Common UNIX Printing System (CEMS-SERVICE-TRANS).
+#
+#   Linux chkconfig stuff:
+#
+#   chkconfig: 2345 98 50
+#   description: Startup/shutdown script for the Common UNIX \
+#                Printing System (CEMS-SERVICE-TRANS).
+#
+#   Copyright 2010-2015 by vrv co.,ltd, all rights reserved.
+#
+#   These coded instructions, statements, and computer programs are the
+#   property of VRV Software Products Distribution and use rights are outlined in the file
+#   "LICENSE.txt" which should have been included with this file.  If this
+#   file is missing or damaged
+#
+#       WWW: http://www.vrv.com.cn
+#
+# heavily edited so that it's more like other scripts in init.d on Red Hat
+# Linux
+#
+### BEGIN INIT INFO
+# Provides: CEMS-SERVICE-TRANS
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: The CEMS-SERVICE-TRANS scheduler
+# Description: The CEMS-SERVICE-TRANS scheduler
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+procName=cemstrans
+ServiceName=CEMS-SERVICE-TRANS
+DAEMON_DIR="/usr/local/service/CEMS-SERVICE-TRANS/bin"
+DAEMON="$DAEMON_DIR/$procName"
+
+RETVAL=0
+
+function is_runing()
+{
+    pid=$(pgrep cemstrans)
+    if [ "$pid" != "" ] 
+    then
+        return 0
+    fi
+    return 1
 }
-# Restart the service 
-stop() {
-        #initlog -c "echo -n Stopping CEMS-SERVICE-TRANS: "
-        killall transferServer 
-        killall CEMS.SERVICE.TRANS
-        ### Now, delete the lock file ###
-        rm -f /var/lock/subsys/transferservice
-        echo
+
+start () {
+    is_runing
+    if [ "$?" = "0" ]
+    then
+        echo -e "\e[1;32m$procName is running!\e[0m"
+        return 0
+   fi
+
+	# start daemon
+    [ -d "$DAEMON_DIR" ] && cd $DAEMON_DIR
+	echo -n $"Starting $ServiceName..."
+	$DAEMON
+    RETVAL=$?
+    sleep 1
+    is_runing
+    if [ "$?" = "0" ]
+    then
+        echo -e "\e[1;32mStart success!\e[0m"
+    else
+        echo -e "\e[1;31mStart failed!\e[0m"
+    fi
 }
-### main logic ###
-case "$1" in
-  start)
-        start
-        ;;
-  stop)
-        stop
-        ;;
-  status)
-        status CEMS.SERVICE.TRANS
-        ;;
-  restart|reload|condrestart)
-        stop
-        start
-        ;;
-  *)
-        echo $"Usage: $0 {start|stop|restart|reload|status}"
-        exit 1
+
+stop () {
+	# stop daemon
+    is_runing
+    if [ "$?" = "0" ]
+    then
+        pgrep cemstrans | xargs -t -I{} kill -9 {} 1>&2 2>/dev/null
+    else
+        echo -e "\e[1;32m$ServiceName has stoped!\e[0m"
+        return 0
+    fi
+
+    echo -e "\e[1;32m$ServiceName stop success!\e[0m"
+    return 0
+}
+
+restart() {
+	stop
+	start
+}
+
+status() {
+		local result
+		echo "check status of ${ServiceName}..."
+
+		result=$(pgrep cemstrans)
+
+		if [ "$result" != "" ]
+        then
+			echo -e "\e[1;32m${ServiceName} is up\e[0m"
+
+			RETVAL=0
+
+		else
+			echo -e "\e[1;31m${ServiceName} is down\e[0m"
+
+			RETVAL=1
+
+		fi
+
+		echo "check status of ${ServiceName} ... done"
+
+                RETVAL=$?
+		
+}
+
+case $1 in
+	start)
+		start
+	;;
+	stop)
+		stop
+	;;
+	restart)
+		restart
+	;;	
+	status)
+		status
+	;;
+	*)
+
+	echo $"Usage: $ServiceName {start|stop|restart|status}" 
+	exit 1
 esac
-exit 0
+
+exit $RETVAL
