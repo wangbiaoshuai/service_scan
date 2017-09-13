@@ -5,6 +5,7 @@
 #include <dlfcn.h>
 #include "common_function.h"
 #include "gen_algorithm.h"
+#include "log.h"
 
 
 #define MAXBUFSIZE         260
@@ -49,9 +50,10 @@ void CGenAlgori::load()
     m_zlibHandle = dlopen(szZlibPath.c_str(), RTLD_NOW);
     if(!m_zlibHandle)
     {
-        printf("load so fail: %s\n", dlerror());
-        printf("path = %s\n", szZlibPath.c_str());
-
+        //printf("load so fail: %s\n", dlerror());
+        //printf("path = %s\n", szZlibPath.c_str());
+        LOG_ERROR("load so failed:"<<dlerror());
+        LOG_ERROR("path="<<szZlibPath.c_str());
     }
     else
     {
@@ -65,8 +67,10 @@ void CGenAlgori::load()
     m_cryptHandle = dlopen(szCryptPath.c_str(), RTLD_NOW);
     if(!m_cryptHandle)
     {
-        printf("load so fail: %s\n", dlerror());
-        printf("path = %s\n", szCryptPath.c_str());
+        //printf("load so fail: %s\n", dlerror());
+        //printf("path = %s\n", szCryptPath.c_str());
+        LOG_ERROR("load so failed:"<<dlerror());
+        LOG_ERROR("path="<<szCryptPath.c_str());
     }
     else
     {
@@ -190,7 +194,8 @@ std::string CGenAlgori::Compress(std::string strIn, unsigned int type)
 
     if(lenout < 0)
     {
-        printf("compress fail error code = %d, type = %d\n", lenout, type);			
+        //printf("compress fail error code = %d, type = %d\n", lenout, type);
+        LOG_ERROR("compress failed error code="<<lenout<<", type="<<type);
     }
     else
     {
