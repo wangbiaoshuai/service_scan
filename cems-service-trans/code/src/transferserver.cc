@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include "typedef.h"
+#include "log.h"
 
 #define TIMEOUT_S1 1
 #define TIMEOUT_S2 1
@@ -100,7 +101,7 @@ namespace transfer
     else
     {
       ////LOG_E("[%0x] handle_check_ismatched error: %s\n",this,error.message().c_str());
-      //LOG_ERROR("handle_check_ismatched error: "<<error.message().c_str());
+      LOG_ERROR("handle_check_ismatched error: "<<error.message().c_str());
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);  
     } 
@@ -124,8 +125,8 @@ namespace transfer
         MATCH_INFO matchinfo = g_matchinfo_map.at(this->map_key_);
         if(matchinfo.life_counter >= TIMEOUT_COUNT)
         {
-          ////LOG_I("[%0x] check session,life_counter >= %d,delete this session\n",this,TIMEOUT_COUNT);
-          //LOG_INFO("handle_check_session: check session, life_counter >= "<<TIMEOUT_COUNT<<", delete this session.");
+          //LOG_I("[%0x] check session,life_counter >= %d,delete this session\n",this,TIMEOUT_COUNT);
+          LOG_INFO("handle_check_session: check session, life_counter >= "<<TIMEOUT_COUNT<<", delete this session.");
           // session_checktimer_.cancel();
           safe_delete(this,map_key_);
           return;
@@ -135,8 +136,8 @@ namespace transfer
     } 
     else
     {
-      ////LOG_E("[%0x] handle_check_session error: %s\n",this,error.message().c_str());
-      //LOG_ERROR("handle_check_session error: "<<error.message().c_str());
+      //LOG_E("[%0x] handle_check_session error: %s\n",this,error.message().c_str());
+      LOG_ERROR("handle_check_session error: "<<error.message().c_str());
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
     } 
@@ -158,11 +159,11 @@ namespace transfer
     if(iter_this != g_matchinfo_map.end())
     {
       string session_id = iter_this->second.session_id;
-      ////LOG_D("[%0x] erase %s from map and delete this session\n",this,map_key_.c_str());
-      //LOG_DEBUG("delete_matchinfo: erase "<<map_key_.c_str()<<" from map and delete this session.");
+      //LOG_D("[%0x] erase %s from map and delete this session\n",this,map_key_.c_str());
+      LOG_DEBUG("delete_matchinfo: erase "<<map_key_.c_str()<<" from map and delete this session.");
       g_matchinfo_map.erase(iter_this);
-//      //LOG_D("[%0x] map size = %d\n",this,g_matchinfo_map.size());
-      //LOG_DEBUG("delete_matchinfo: map size = "<<g_matchinfo_map.size());
+//      LOG_D("[%0x] map size = %d\n",this,g_matchinfo_map.size());
+      LOG_DEBUG("delete_matchinfo: map size = "<<g_matchinfo_map.size());
       if(!is_reduplicate_)
       {
         //update the same session's other matchinfo's life_count = TIME_OUT
@@ -170,16 +171,16 @@ namespace transfer
         std::map<string,MATCH_INFO>::iterator iter  = g_matchinfo_map.begin();
         for(;iter != g_matchinfo_map.end();iter++)
         {
-          ////LOG_I("[%0x] map size = %d: %s is still in map\n",this,g_matchinfo_map.size(),iter->first.c_str()); 
-          //LOG_INFO("map size = "<<g_matchinfo_map.size()<<": "<<iter->first.c_str()<<" is still in map.");
+          //LOG_I("[%0x] map size = %d: %s is still in map\n",this,g_matchinfo_map.size(),iter->first.c_str()); 
+          LOG_INFO("map size = "<<g_matchinfo_map.size()<<": "<<iter->first.c_str()<<" is still in map.");
           MATCH_INFO matchinfo = iter->second;
           if(matchinfo.life_counter < TIMEOUT_COUNT
             && matchinfo.session_id == session_id
             && matchinfo.is_matched)
           {
-            /*//LOG_I("[%0x] update the same session %s:%s's life_counter to %d\n",
+            /*LOG_I("[%0x] update the same session %s:%s's life_counter to %d\n",
                               this,matchinfo.session_id.c_str(),iter->first.c_str(),TIMEOUT_COUNT);*/
-              //LOG_INFO("update the same session "<<matchinfo.session_id.c_str()<<":"<<iter->first.c_str()<<"'s life_counter to "<<TIMEOUT_COUNT);
+              LOG_INFO("update the same session "<<matchinfo.session_id.c_str()<<":"<<iter->first.c_str()<<"'s life_counter to "<<TIMEOUT_COUNT);
             matchinfo.life_counter = TIMEOUT_COUNT;
             g_matchinfo_map[iter->first] = matchinfo;
           }
@@ -225,6 +226,7 @@ namespace transfer
       if(matchinfo.is_matched)
       {
         //LOG_I("[%0x] matched,write response to %s\n",this,map_key_.c_str());
+        LOG_INFO("check_ismatched: matched, write response to "<<map_key_.c_str());
         write_response(true,matchinfo.header_maxcode,matchinfo.header_mincode,""); // hard code for test
       }
       else
@@ -235,6 +237,7 @@ namespace transfer
           MATCH_INFO tmp = iter->second;
           tmp.life_counter++;
           //LOG_I("[%0x] not matched,update life_counter %d\n",this,tmp.life_counter);
+          LOG_INFO("check_ismatched: not matched, update life_count "<<tmp.life_counter);
           if(tmp.life_counter >= TIMEOUT_COUNT)
           {
             write_response(false,matchinfo.header_maxcode,matchinfo.header_mincode,"Session quit,because time out while waiting to match info"); // hard code for test
@@ -248,6 +251,7 @@ namespace transfer
         else
         {
           //LOG_E("[%0x] session id is empty\n",this);
+          LOG_ERROR("check_ismatched: session id is empty.");
           restart_ismatched_timer(TIMEOUT_S1); 
         }
       }
@@ -365,12 +369,14 @@ namespace transfer
         if(!is_exist_in_map(dst_ip))
         {
           //LOG_I("%s has been deleted,stop transfering,return\n",dst_ip.c_str());
+          LOG_INFO("handle_read: "<<dst_ip.c_str()<<" has been deleted, stop transfering, return.");
           return;
         }
         tcp::socket* dst_socketptr_ = g_matchinfo_map.at(dst_ip).socket_ptr;
         if(dst_socketptr_)
         {
-          // //LOG_I("start write to %s\n",dst_ip.c_str());
+          //LOG_I("start write to %s\n",dst_ip.c_str());
+          LOG_INFO("handle_read: start wirte to "<<dst_ip.c_str());
           boost::asio::async_write(*dst_socketptr_,
               boost::asio::buffer(data_, bytes_transferred),
               boost::bind(&session::handle_write, this,
@@ -380,6 +386,7 @@ namespace transfer
     else
     {
       //LOG_E("[%0x] handle_read error: %s\n",this,error.message().c_str());
+      LOG_ERROR("handle_read error: "<< error.message().c_str());
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
     }
@@ -405,6 +412,7 @@ namespace transfer
     else
     {
       //LOG_E("[%0x] handle_write error: %s\n",this,error.message().c_str());
+      LOG_ERROR("handle_write error: "<<error.message().c_str());
       // session_checktimer_.cancel();
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
@@ -453,7 +461,8 @@ namespace transfer
 
       string remote_ip = this->socket_.remote_endpoint().address().to_string();
       map_key_ = remote_ip + ":" + boost::lexical_cast<string>(this) + ":" + boost::lexical_cast<string>(std::time(NULL));
-      //LOG_I("[%0x] map_key: %s\n",this,map_key_.c_str()); 
+      //LOG_I("[%0x] map_key: %s\n",this,map_key_.c_str());
+      LOG_INFO("parse_matchmsg_header: map_key: "<<map_key_.c_str());
 
       msgheader msg_header(header_);
       PCEMS_NET_HEAD header = (PCEMS_NET_HEAD)header_;
@@ -469,16 +478,19 @@ namespace transfer
 
       g_matchinfo_map.insert(std::pair<string,MATCH_INFO>(map_key_,tmp));
       //LOG_I("[%0x] parse header,then intonsert data of key=%s into matchinfo map\n",this,map_key_.c_str());
+      LOG_INFO("parse_matchmsg_header: parse header, then intonsert data of key="<<map_key_.c_str()<<" into matchinfo map.");
 
       DWORD body_len = msg_header.body_len();
       char* body_ptr = new char[body_len]; //remember,change share_ptr ???
-      //LOG_I("[%0x] parsed matchinfo header,json size = %d\n",this,body_len); 
+      //LOG_I("[%0x] parsed matchinfo header,json size = %d\n",this,body_len);
+      LOG_INFO("parse_matchmsg_header: parsed matchinfo header, json size="<<body_len);
       // charptr body_ptr(new char[body_len]);
       read_matchmsg_body(body_ptr,body_len);
     }
     else
     {
       //LOG_E("[%0x] parse_matchmsg_header error: %s\n",this,error.message().c_str());
+      LOG_ERROR("parse_matchmsg_header error: "<<error.message().c_str());
       // ismatched_checktimer_.cancel();
       if(error.value() != boost::system::errc::operation_canceled)
       {
@@ -512,7 +524,8 @@ namespace transfer
     unsigned int secondmincode = matchinfo.header_mincode;
     string seconddevtype = matchinfo.device_type;
     /*LOG_I("[%0x] session:%s,src_id:%s,mincode:%d,dst_id:%s,dev_type:%s\n",this,secondsessionid.c_str()
-      ,secondsrcid.c_str(),secondmincode,seconddstid.c_str(),seconddevtype.c_str());*/ 
+      ,secondsrcid.c_str(),secondmincode,seconddstid.c_str(),seconddevtype.c_str());*/
+    LOG_INFO("try_match: session:"<<secondsessionid.c_str()<<", src_id:"<<secondsrcid.c_str()<<", mincode:"<<secondmincode<<", dst_id:"<<seconddstid.c_str()<<", dev_type:"<<seconddevtype.c_str());
 
     map<string,MATCH_INFO>::iterator iter = g_matchinfo_map.begin();
     for(;iter != g_matchinfo_map.end();iter++)
@@ -536,6 +549,12 @@ namespace transfer
         //LOG_I("[%0x] dst_id: %s %s \n",this,seconddstid.c_str(),firstdstid.c_str()); 
         //LOG_I("[%0x] dev_type: %s %s \n",this,seconddevtype.c_str(),firstdevtype.c_str()); 
         //LOG_I("[%0x] match successfully,then update matchinfo\n",this);
+        LOG_INFO("session: "<<secondsessionid.c_str()<<" "<<firstsessionid.c_str());
+        LOG_INFO("src_id: "<<secondsrcid.c_str()<<" "<<firstsrcid.c_str());
+        LOG_INFO("mincode: "<<secondmincode<<" "<<firstmincode);
+        LOG_INFO("dst_id: "<<seconddstid.c_str()<<" "<<firstdstid.c_str());
+        LOG_INFO("dev_type: "<<seconddevtype.c_str()<<" "<<firstdevtype.c_str());
+        LOG_INFO("match successfully, then update matchinfo.");
         MATCH_INFO tmp;
         tmp = iter->second;
         tmp.life_counter = 0;
@@ -547,8 +566,9 @@ namespace transfer
         matchinfo.is_matched = true;
         matchinfo.dst_ip = iter->first;//iter->second.ip + boost::lexical_cast<string>(iter->second.socket_ptr); 
 
-        //LOG_I("[%0x] matched: %s, %s\n",\
-                this,map_key_.c_str(),matchinfo.dst_ip.c_str());
+        /*LOG_I("[%0x] matched: %s, %s\n",\
+                this,map_key_.c_str(),matchinfo.dst_ip.c_str());*/
+        LOG_INFO("matched: "<<map_key_.c_str()<<", "<<matchinfo.dst_ip.c_str());
         result = true;
         break;
       }
@@ -556,6 +576,7 @@ namespace transfer
     g_matchinfo_map[map_key_] = matchinfo; 
     // g_matchinfo_map.insert(std::pair<string,MATCH_INFO>(matchinfo.ip,matchinfo));
     //LOG_I("[%0x] parsed body,then update data of key=%s into matchinfo map\n",this,matchinfo.ip.c_str());
+    LOG_INFO("parsed body, then update data of key="<<matchinfo.ip.c_str()<<" into matchinfo map.");
     return result;
   }
 
@@ -582,12 +603,14 @@ namespace transfer
       msg_response.init_response(mincode,0,description,maxcode);
       response_str_ = msg_response.response();
       //LOG_I("[%0x] wirte to %s matched info:%s\n",this,map_key_.c_str(),response_str_.c_str());
+      LOG_INFO("write_response: write to "<<map_key_.c_str()<<" matched info:"<<response_str_.c_str());
     }
     else
     {
       msg_response.init_response(mincode,1,description,maxcode);
       response_str_ = msg_response.response();
       //LOG_I("[%0x] wirte to %s not matched info:%s\n",this,map_key_.c_str(),response_str_.c_str());
+      LOG_INFO("write_response: write to "<<map_key_.c_str()<<" not matched info:"<<response_str_.c_str());
     }
 
     MATCH_INFO tmp = g_matchinfo_map.at(map_key_);
@@ -604,6 +627,7 @@ namespace transfer
     header.wIndex = tmp.header_index;
 
     //LOG_D("[%0x]header.dwDataSize = %d\n",this,header.dwDataSize);
+    LOG_DEBUG("write_response: header.dwDataSize="<<header.dwDataSize);
 
     boost::asio::async_write(socket_,
       boost::asio::buffer(&header,sizeof(CEMS_NET_HEAD)),
@@ -635,6 +659,7 @@ namespace transfer
     else
     {
       //LOG_E("[%0x] handle_write_header error: %s\n",this,error.message().c_str());
+      LOG_ERROR("handle_write_header error: "<<error.message().c_str());
       // ismatched_checktimer_.cancel();
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
@@ -659,6 +684,7 @@ namespace transfer
       if(g_matchinfo_map.at(map_key_).is_matched)
       {
         //LOG_I("[%0x] start session check timer\n",this);
+        LOG_INFO("handle_write_body: start session check timer.");
         session_checktimer_.async_wait(boost::bind(&session::handle_check_session,
                                         this,
                                           boost::asio::placeholders::error));
@@ -667,6 +693,7 @@ namespace transfer
       else
       {
         //LOG_E("[%0x] not matched,delete this session\n",this);
+        LOG_ERROR("handle_write_body: not matched, delete this session.");
         safe_delete(this,map_key_);
       }
         // session_checktimer_.cancel();
@@ -675,6 +702,7 @@ namespace transfer
     else
     {
       //LOG_E("[%0x] handle_write_body error: %s\n",this,error.message().c_str());
+      LOG_ERROR("handle_write_body error: "<<error.message().c_str());
       // session_checktimer_.cancel();
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
@@ -711,6 +739,9 @@ namespace transfer
           ,matchinfo.dst_device_id.c_str()
           ,matchinfo.header_mincode
           ,matchinfo.device_type.c_str()); */
+
+          LOG_ERROR("is_exist_in_map: same mathinfo has existed in map.");
+          LOG_ERROR("is_exist_in_map: src_id:"<<matchinfo.src_device_id.c_str()<<", dst_id:"<<matchinfo.dst_device_id.c_str()<<", mincode:"<<matchinfo.header_mincode<<", dev_type:"<<matchinfo.device_type.c_str());
         
         result = true;
         is_reduplicate_ = true;
@@ -753,6 +784,7 @@ namespace transfer
       else
       {
         //LOG_E("[%0x] matchinfo is replicated,delete self\n",this);
+        LOG_ERROR("parse_matchmsg_body: matchinfo is replicated, delete self.");
         // this->socket_.close();
         // this->ismatched_checktimer_.cancel();
         safe_delete(this,map_key_);
@@ -762,6 +794,7 @@ namespace transfer
     else
     {
       //LOG_E("[%0x] handle_write_body error: %s\n",this,error.message().c_str());
+      LOG_ERROR("parse_matchmsg_body error: "<<error.message().c_str());
       // this->ismatched_checktimer_.cancel();
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
@@ -773,6 +806,7 @@ namespace transfer
     ,acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
   {
     //LOG_I("listening %d\n",port);
+    LOG_INFO("listening "<<port);
     start_accept();
   }
 
@@ -789,12 +823,14 @@ namespace transfer
   {
     if (!error)
     {
-      //LOG_I("[%0x] accepted a new session\n",new_session); 
+      //LOG_I("[%0x] accepted a new session\n",new_session);
+      LOG_INFO("handle_accept: accepted a new Session.");
       new_session->start();
     }
     else
     {
-      //LOG_E("handle_accept error,delete this session\n"); 
+      //LOG_E("handle_accept error,delete this session\n");
+      LOG_ERROR("handle_accept error, delete this session.");
       delete new_session;
     }
 
