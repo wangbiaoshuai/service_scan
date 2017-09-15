@@ -30,13 +30,81 @@ using namespace std;
 
 #include "log.h"
 
-#define device "eth0"                //本机的哪块网卡
+//#define device "eth0"                //本机的哪块网卡
 #define fill_buf "aaaaaaaaaaaa"
+#define MAXINTERFACES 16
 static int socket_id;
 static char *target = NULL;
 static struct in_addr  src, dst;
 static struct sockaddr_ll   me, he;
 static std::string local_ip("");
+static std::string device("");
+
+string get_default_device()
+{
+    string szIp;
+    vector<string> mip;
+    int sock_fd;
+    struct ifreq buf[MAXINTERFACES];
+    struct ifconf ifc;
+    int interface_num;
+
+    if((sock_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+        perror("Create socket failed");
+
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_req = buf;
+    if(ioctl(sock_fd, SIOCGIFCONF, (char *)&ifc) < 0)
+    {
+        perror("Get a list of interface addresses failed");
+        close(sock_fd);
+        return "";
+    }
+
+    interface_num = ifc.ifc_len / sizeof(struct ifreq);
+    printf("The number of interfaces is %d\n", interface_num);
+
+    while(interface_num--)
+    {
+        printf("Net device: %s\n", buf[interface_num].ifr_name);
+
+        if(ioctl(sock_fd, SIOCGIFFLAGS, (char *)&buf[interface_num]) < 0)
+        {
+            perror("Get the active flag word of the device");
+            close(sock_fd);
+            break;
+        }
+
+        if(buf[interface_num].ifr_flags & IFF_PROMISC)
+            printf("Interface is in promiscuous mode\n");
+
+        if(buf[interface_num].ifr_flags & IFF_UP)
+            printf("Interface is running\n");
+        else
+            printf("Interface is not running\n");
+
+        if(ioctl(sock_fd, SIOCGIFADDR, (char *)&buf[interface_num]) < 0)
+        {
+            perror("Get interface address failed");
+            close(sock_fd);
+            break;
+        }
+
+        szIp = inet_ntoa(((struct sockaddr_in*)(&buf[interface_num].ifr_addr))->sin_addr);
+
+        if(szIp.compare("127.0.0.1") != 0 && szIp.compare("0.0.0.0") != 0)
+        {
+            mip.push_back(buf[interface_num].ifr_name);
+        }
+        printf("%s:%s\n", buf[interface_num].ifr_name, szIp.c_str());
+    }
+    close(sock_fd);
+
+    if(!mip.empty())
+        return mip.front();
+    else
+        return "";
+}
 
 struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
 {
@@ -44,12 +112,12 @@ struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
     int sock_id = socket(AF_INET, SOCK_DGRAM, 0);//设置数据报socket
     if (sock_id < 0) 
     {
-        LOG_ERROR("socket: "<<strerror(errno));
+        LOG_WARN("socket: "<<strerror(errno));
         return saddr.sin_addr;
     }
     if (devices) 
     {
-        if (setsockopt(sock_id, SOL_SOCKET, SO_BINDTODEVICE, device, strlen(device) + 1) == -1)
+        if (setsockopt(sock_id, SOL_SOCKET, SO_BINDTODEVICE, device.c_str(), device.length() + 1) == -1)
         {
             //将socketbind到网卡上
             LOG_WARN("get_src_ip: interface is ignored.");
@@ -62,13 +130,13 @@ struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
     if (connect(sock_id, (struct sockaddr*)&saddr, sizeof(saddr)) == -1) 
     {
         //将socket连接到相应的inet地址上
-        LOG_ERROR("connect: "<<strerror(errno));
+        LOG_WARN("connect: "<<strerror(errno));
         return saddr.sin_addr;
     }
     if (getsockname(sock_id, (struct sockaddr*)&saddr, (socklen_t*)&alen) == -1) 
     {
         //通过socket获得绑定的ip地址
-        LOG_ERROR("getsockname: "<<strerror(errno));
+        LOG_WARN("getsockname: "<<strerror(errno));
         return saddr.sin_addr;
     }
     close(sock_id);
@@ -82,23 +150,23 @@ int check_device(const char* if_dev, int ss)//网卡和socket    将网卡设置
     strncpy(ifr.ifr_name, if_dev, IFNAMSIZ - 1);//网卡设备名
     if (ioctl(ss, SIOCGIFINDEX, &ifr) < 0) 
     {
-        LOG_ERROR("arping: unknow iface "<<if_dev);
+        LOG_WARN("arping: unknow iface "<<if_dev);
         return -1;
     }
     ifindex = ifr.ifr_ifindex;
     if (ioctl(ss, SIOCGIFFLAGS, (char*)&ifr)) 
     {
-        LOG_ERROR("ioctl(SIOCGIFFLAGS): "<<strerror(errno));
+        LOG_WARN("ioctl(SIOCGIFFLAGS): "<<strerror(errno));
         return -1;
     }
     if (!(ifr.ifr_flags&IFF_UP)) 
     {
-        LOG_ERROR("interface "<<if_dev<<"is down.");
+        LOG_WARN("interface "<<if_dev<<"is down.");
         return -1;
     }
     if (ifr.ifr_flags&(IFF_NOARP | IFF_LOOPBACK)) 
     {
-        LOG_ERROR("interface "<<if_dev<<" is not ARPable");
+        LOG_WARN("interface "<<if_dev<<" is not ARPable");
         return -1;
     }
     return ifindex;
@@ -110,22 +178,22 @@ int socket_init()
     s = socket(PF_PACKET, SOCK_DGRAM, 0);//数据包
     s_errno = errno;
     me.sll_family = AF_PACKET;
-    me.sll_ifindex = check_device(device, s);
+    me.sll_ifindex = check_device(device.c_str(), s);
     me.sll_protocol = htons(ETH_P_ARP);
     if (bind(s, (struct sockaddr*)&me, sizeof(me)) == -1) 
     {
-        LOG_ERROR("bind: "<<strerror(errno));
+        LOG_WARN("bind: "<<strerror(errno));
         return -1;
     }
     int alen = sizeof(me);
     if (getsockname(s, (struct sockaddr*)&me, (socklen_t*)&alen) == -1) 
     {
-        LOG_ERROR("getsockname: "<<strerror(errno));
+        LOG_WARN("getsockname: "<<strerror(errno));
         return -1;
     }
     if (me.sll_halen == 0) 
     {
-        LOG_ERROR("interface "<<device<<" is not ARPable (no ll address)");
+        LOG_WARN("interface "<<device<<" is not ARPable (no ll address)");
         return -1;
     }
     he = me;
@@ -197,11 +265,20 @@ int get_mac_addr(const std::string& ip, std::string& mac)
 {
     if(ip.empty())
     {
-        LOG_ERROR("get_mac_addr: target ip is NULL.");
+        LOG_WARN("get_mac_addr: target ip is NULL.");
         return -1;
     }
 
     target = (char*)ip.c_str();
+    if(device.empty())
+    {
+        device = get_default_device();
+    }
+    if(device.empty())
+    {
+        LOG_WARN("get_mac_addr: no network card.");
+        return -1;
+    }
     
     if (inet_aton(target, &dst) != 1) 
     {
@@ -210,7 +287,7 @@ int get_mac_addr(const std::string& ip, std::string& mac)
         hp = gethostbyname2(target, AF_INET);
         if (!hp) 
         {
-            LOG_ERROR("get_mac_addr: unknow host "<<target);
+            LOG_WARN("get_mac_addr: unknow host "<<target);
             return -1;
         }
         memcpy(&dst, hp->h_addr, 4);
@@ -218,13 +295,18 @@ int get_mac_addr(const std::string& ip, std::string& mac)
    
     if(local_ip.empty())
     {
-        src = get_src_ip(device);//获得本机device网卡的ip
+        src = get_src_ip(device.c_str());//获得本机device网卡的ip
         if (!src.s_addr) 
         {
-            LOG_ERROR("get_mac_addr: no source address in not-DAD node");
+            LOG_WARN("get_mac_addr: no source address in not-DAD node");
             return -1;
         }
         local_ip = inet_ntoa(src);
+    }
+    if(local_ip.empty())
+    {
+        LOG_WARN("get_mac_addr: get local ip failed.");
+        return -1;
     }
 
     socket_id = socket_init();
@@ -242,7 +324,7 @@ int get_mac_addr(const std::string& ip, std::string& mac)
 
         if (recv_size < 0) 
         {
-            LOG_ERROR("get_mac_addr: recvfrom "<<strerror(errno));
+            LOG_WARN("get_mac_addr: recvfrom "<<strerror(errno));
             return -1;;
         }
         

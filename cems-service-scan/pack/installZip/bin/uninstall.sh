@@ -25,7 +25,7 @@ if [ $input == y ] ; then
 	echo "开始卸载 $serviceName 服务"
 	echo "正在停止 $serviceName 服务..."
 	service $serviceName stop
-	sleep 1
+	sleep 2
 
     is_runing
     if [ "$?" = "0" ]
