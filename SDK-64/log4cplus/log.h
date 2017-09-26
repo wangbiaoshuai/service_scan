@@ -2,6 +2,7 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/consoleappender.h>
 #include <log4cplus/layout.h>
+#include <log4cplus/loglevel.h>
 #include <log4cplus/configurator.h>
 //使用日志配置初始化log日志
 #define INIT_LOG(filePath) log4cplus::PropertyConfigurator::doConfigure(filePath)

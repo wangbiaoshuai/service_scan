@@ -1,5 +1,6 @@
 #include "parse_policy.h"
 
+#include <errno.h>
 #include "log.h"
 #include "tinyxml.h"
 #include "common_function.h"
@@ -7,9 +8,12 @@
 namespace cems{ namespace service{ namespace scan{
 using namespace std;
 
+#define LOG_CONFIG_PATH "../config/log4cplus.properties"
+
 ParsePolicy::ParsePolicy() :
 policy_mutex_(),
-policy_file_("")
+policy_file_(""),
+current_log_level_("DEBUG")
 {
 }
 
@@ -183,6 +187,17 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
             break;
         }
 
+        age_element = root_element->FirstChildElement("logBean");
+        if(age_element != NULL)
+        {
+            string log_level = age_element->Attribute("logLevel");
+            if(log_level != current_log_level_)
+            {
+                SetLogLevel(LOG_CONFIG_PATH, log_level);
+                current_log_level_ = log_level;
+            }
+        }
+
         if(policy_param.interval_time.empty())
             policy_param.interval_time = DEFAULT_INTERVAL; //60S
         if(circle_time.empty())
@@ -245,6 +260,7 @@ int ParsePolicy::WritePolicy(const std::string& data)
     FILE* fp = fopen(policy_file_.c_str(), "w+");
     if(fp == NULL)
     {
+        policy_mutex_.Unlock();
         LOG_ERROR("WritePolicy: open file "<<policy_file_<<" failed.");
         return -1;
     }
@@ -253,5 +269,72 @@ int ParsePolicy::WritePolicy(const std::string& data)
     fclose(fp);
     policy_mutex_.Unlock();
     return size;
+}
+
+const char* LOG_LEVEL_SET_STR = "log4cplus.appender.AppenderName.filters.1.LogLevelMin";
+int ParsePolicy::SetLogLevel(const string&  log_config_file, string log_level)
+{
+    log4cplus::LogLevel level;
+
+    if(log_level == "TRACE")
+    {
+        level = log4cplus::TRACE_LOG_LEVEL;
+    }
+    else if (log_level == "DEBUG")
+    {
+        level = log4cplus::DEBUG_LOG_LEVEL;
+    }
+    else if(log_level == "INFO")
+    {
+        level = log4cplus::INFO_LOG_LEVEL;
+    }
+    else if(log_level == "WARN")
+    {
+        level = log4cplus::WARN_LOG_LEVEL;
+    }
+    else if(log_level == "ERROR")
+    {
+        level = log4cplus::ERROR_LOG_LEVEL;
+    }
+    else if(log_level == "FATAL")
+    {
+        level = log4cplus::FATAL_LOG_LEVEL;
+    }
+    else
+    {
+        log_level = "TRACE";
+        level = log4cplus::TRACE_LOG_LEVEL;
+    }
+
+    FILE* fp = fopen(log_config_file.c_str(), "r+");
+    if(fp == NULL)
+    {
+        LOG_ERROR("open "<<log_config_file.c_str()<<" error:"<<strerror(errno));
+        return -1;
+    }
+
+    int pos = 0;
+    while(!feof(fp))
+    {
+        char line[512] = {0};
+        fgets(line, sizeof(line), fp);
+        if(feof(fp))
+            break;
+
+        if(strncmp(line, LOG_LEVEL_SET_STR, strlen(LOG_LEVEL_SET_STR)) == 0)
+        {
+            int offset = ftell(fp) - pos;
+            fseek(fp, -offset, SEEK_CUR);
+            char data[200] = {0};
+            sprintf(data, "%s=%-5s", LOG_LEVEL_SET_STR, log_level.c_str());
+            fputs(data, fp);
+            break;
+        }
+        pos = ftell(fp);
+    }
+    fclose(fp);
+    log4cplus::Logger::getRoot().setLogLevel(level);
+    LOG_DEBUG("SetLogLevel: "<<log_level.c_str());
+    return 0;
 }
 }}}

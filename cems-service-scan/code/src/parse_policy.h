@@ -29,6 +29,7 @@ public:
     int ReadPolicy(PolicyParam& policy_param);
     int WritePolicy(const std::string& data);
     bool GetPolicyCrc(std::string& crc);
+    int SetLogLevel(const std::string&  log_config_file, std::string log_level);
 
 private:
     ParsePolicy();
@@ -37,6 +38,7 @@ private:
 private:
     Mutex policy_mutex_;
     std::string policy_file_;
+    std::string current_log_level_;
 };
 }}}
 #endif // PARSE_POLICY_H_
