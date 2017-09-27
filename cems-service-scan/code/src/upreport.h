@@ -6,6 +6,7 @@
 #include <transport/TBufferTransports.h>
 #include <protocol/TCompactProtocol.h>
 #include <protocol/TBinaryProtocol.h>
+#include <vector>
 
 namespace cems{ namespace service{ namespace scan{
 
@@ -33,6 +34,7 @@ public:
 private:
 	std::string m_szIp;
 	unsigned int m_port;
+    bool m_is_open;
 
 private:
 	boost::shared_ptr<TSocket>     m_socket; 
@@ -43,7 +45,7 @@ private:
 
 public:
 	int	m_zipMode;
-	int 	m_encryptMode;
+	int m_encryptMode;
 
 };
 }}}

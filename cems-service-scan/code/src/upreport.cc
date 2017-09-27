@@ -10,7 +10,13 @@
 
 namespace cems{ namespace service{ namespace scan{
 
-CUpReport::CUpReport():m_pclient(NULL), m_zipMode(0), m_encryptMode(0)
+CUpReport::CUpReport() :
+m_szIp(""),
+m_port(0),
+m_is_open(false),
+m_pclient(NULL), 
+m_zipMode(0), 
+m_encryptMode(0)
 {
     std::string szPath = GetCurrentPath();
 
@@ -27,8 +33,6 @@ CUpReport::CUpReport():m_pclient(NULL), m_zipMode(0), m_encryptMode(0)
 
     ParseConfigure::GetInstance().GetProperty("compress", szCompress);
     ParseConfigure::GetInstance().GetProperty("encrypt", szEncrypt);
-    //CIniparse::ReadValue(szPath, "compress", szCompress);
-    //CIniparse::ReadValue(szPath, "encrypt", szEncrypt);
 
     if(szEncrypt.empty())
     {
@@ -48,7 +52,7 @@ CUpReport::~CUpReport()
 {
 }
 
-bool  CUpReport::init(std::string szIp, unsigned int port)
+bool CUpReport::init(std::string szIp, unsigned int port)
 {
     m_szIp = szIp;
     m_port = port;
@@ -56,8 +60,18 @@ bool  CUpReport::init(std::string szIp, unsigned int port)
     return 1;
 }
 
-bool  CUpReport::open()
+bool CUpReport::open()
 {
+    if(m_is_open)
+    {
+        LOG_WARN("report has opened.");
+        return true;
+    }
+    if(m_szIp.empty() || m_port == 0)
+    {
+        LOG_ERROR("open: ip/port is error.");
+        return false;
+    }
     m_socket = boost::shared_ptr<TSocket>(new TSocket(m_szIp.c_str(), m_port));
     m_socket->setConnTimeout(1000 * 5); // set connection timeout 5S
     m_transport = boost::shared_ptr<TTransport>(new TFramedTransport(m_socket));
@@ -70,11 +84,6 @@ bool  CUpReport::open()
     }
     catch(TException & tx)
     {
-        /*char szErrorBuffer[260] = {0};
-        sprintf(szErrorBuffer, "connect ip = %s, port = %d, open-ERROR: %s\n", m_szIp.c_str(), m_port, tx.what());
-
-        CMlog log;
-        log.WriteLog(szErrorBuffer, LOG_ERROR);*/
         LOG_ERROR("open: connect ip=" << m_szIp << ", port=" << m_port << "open-ERROR:" << tx.what());
 
         if(m_pclient != NULL)
@@ -86,26 +95,21 @@ bool  CUpReport::open()
         return false;
     }
 
-    /*char buffer[100] = {0};
-    sprintf(buffer, "send: ip = %s, port = %d", m_szIp.c_str(), m_port);
-
-    CMlog log;
-    log.WriteLog(buffer, LOG_INFO);*/
     LOG_INFO("open: connect ip="<<m_szIp<<", port:"<<m_port<<" success.");
-
     return true;
 }
 
 bool CUpReport::close()
 {
     bool bret = true;
+    m_is_open = false;
     try
     {
         m_transport->close();
     }
     catch(TException & tx)
     {
-        printf("close-ERROR: %s\n", tx.what());
+        LOG_ERROR("CUpReport::close error("<<tx.what()<<")");
         bret = false;
     }
 
@@ -115,20 +119,17 @@ bool CUpReport::close()
         m_pclient = NULL;
     }
 
+    LOG_INFO("close "<<m_szIp.c_str()<<":"<<m_port<<" report success.");
     return bret;
 }
 
 bool  CUpReport::sendToServer(std::string maxCode, std::string minCode, std::string checkCode, bool bzip, std::string szJdata )
 {
     CGenAlgori genrial;
-
-    //CMlog log;
     std::string szRet;
-
-    //char buffer[1024]={0};
     bool bret = false;
 
-    CUpReport::open();
+    //CUpReport::open();
     try
     {
         if(m_pclient)
@@ -201,23 +202,17 @@ bool  CUpReport::sendToServer(std::string maxCode, std::string minCode, std::str
     }
     catch(TException & tx)
     {
-        /*printf("serverip = %s, port = %d\n", m_szIp.c_str(), m_port);
-        printf("%s send-ERROR: %s\n", maxCode.c_str(), tx.what());
-
-        sprintf(buffer, "%s send-ERROR: %s serverip = %s, port = %d", maxCode.c_str(), tx.what(), m_szIp.c_str(), m_port);
-        log.WriteLog(buffer, LOG_ERROR);*/
         LOG_ERROR("sendToServer:Exception:"<<tx.what()<<", maxCode="<<maxCode<<", serverip="<<m_szIp<<", port="<<m_port);
 
         bret =  false;
     }
-    CUpReport::close();
+    //CUpReport::close();
 
     return bret;
 }
 
 bool  CUpReport::sendToServerOnce(std::string maxCode, std::string minCode, std::string checkCode, bool bzip, std::string szJdata )
 {
-    //CMlog log;
     boost::shared_ptr<TSocket> socket(new TSocket(m_szIp.c_str(), m_port));
     socket->setConnTimeout(1000 * 5); // set connection timeout 5S
     boost::shared_ptr<TTransport> transport(new TFramedTransport(socket));

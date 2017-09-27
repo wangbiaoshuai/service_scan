@@ -932,6 +932,19 @@ int DetectRegist(MAP_COMMON * ipRange)
 
 int DetectUnRegist(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId)
 {
+//从这里开始上报数据，所以需要打开连接。
+    if(!report_center.open())
+    {
+        LOG_ERROR("DetectInit: open center report error.");
+        return -1;
+    }
+
+    if(!report_block.open())
+    {
+        LOG_ERROR("DetectInit: open block report error.");
+        return -1;
+    }
+
     g_szAreaId = szAreaId;
     g_szOrgId = szOrgId;
 
@@ -1103,15 +1116,6 @@ int DetectInit()
     report_center.init(szCenterIp, atoi(szCenterPort.c_str()));
     report_block.init(szBlockIp, atoi(szBlockPort.c_str()));
 
-    /*if(!report_center.open())
-      {
-      return -1;
-      }
-
-      if(!report_block.open())
-      {
-      return -1;
-      }*/
     LOG_INFO("DetectInit: end.");
     return 	1;
 }
@@ -1255,8 +1259,8 @@ int DetectClose()
     g_mapUnRegKeep.swap(g_mapUnRegist);
     g_mapUnRegist.clear();
 
-    //report_center.close();
-    //report_block.close();	
+    report_center.close();
+    report_block.close();	
 
     printf("keep count = %lu\n", g_mapUnRegKeep.size());
 
