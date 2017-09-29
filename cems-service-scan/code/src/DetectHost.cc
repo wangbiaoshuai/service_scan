@@ -36,8 +36,8 @@ struct _NBT_INFO
     std::string szGroupName;
 };
 
-CUpReport report_block;
-CUpReport report_center;
+UpReport report_block;
+UpReport report_center;
 
 mapDev	  g_mapUnRegKeep;	 
 mapDev    g_mapUnRegist; 
@@ -450,14 +450,14 @@ void recvNbtPack(int sock)
 
                     printf("NBT发现未注册主机 = %s\n", szText.c_str());
                     bool bret;
-                    bret = report_center.sendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+                    bret = report_center.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
                     if(!bret)
                     {
                         LOG_ERROR("recvNbtPack: send data to center service error, data:"<<szText.c_str());
                         printf("send to data service fail\n");
                     }
 
-                    bret = report_block.sendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
+                    bret = report_block.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
                     if(!bret)
                     {
                         LOG_ERROR("recvNbtPack: send data to block service error, data:"<<szText.c_str());
@@ -494,14 +494,14 @@ void recvNbtPack(int sock)
                 printf("PING发现未注册主机 = %s\n", szText.c_str());
 
                 bool bret;
-                bret = report_center.sendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+                bret = report_center.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
                 if(!bret)
                 {
                     LOG_ERROR("recvPingPack: send data to center service error, data:"<<szText.c_str());
                     printf("send to data service fail\n");
                 }
 
-                bret = report_block.sendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
+                bret = report_block.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
                 if(!bret)
                 {
                     LOG_ERROR("recvPingPack: send data to block service error, data:"<<szText.c_str());
@@ -648,14 +648,14 @@ void  parseClientPack(ULONG uip,  char* data, int iLen)
             LOG_DEBUG("parseClientPack: discover roaming device: "<<szText.c_str());
 
             bool bret;
-            bret = report_center.sendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+            bret = report_center.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
             if(!bret)
             {
                 printf("send to data service fail\n");
                 LOG_ERROR("parseClientPack: send data to center service failed. data:"<<szText);
             }
 
-            bret = report_block.sendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
+            bret = report_block.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
                 printf("send to block service fail\n");
@@ -933,13 +933,13 @@ int DetectRegist(MAP_COMMON * ipRange)
 int DetectUnRegist(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId)
 {
 //从这里开始上报数据，所以需要打开连接。
-    if(!report_center.open())
+    if(!report_center.Open())
     {
         LOG_ERROR("DetectInit: open center report error.");
         return -1;
     }
 
-    if(!report_block.open())
+    if(!report_block.Open())
     {
         LOG_ERROR("DetectInit: open block report error.");
         return -1;
@@ -1113,8 +1113,8 @@ int DetectInit()
     //szBlockIp = "192.168.32.6";
     /*szCenterIp = "192.168.0.132"; */
 
-    report_center.init(szCenterIp, atoi(szCenterPort.c_str()));
-    report_block.init(szBlockIp, atoi(szBlockPort.c_str()));
+    report_center.Init(szCenterIp, atoi(szCenterPort.c_str()), 2);
+    report_block.Init(szBlockIp, atoi(szBlockPort.c_str()), 2);
 
     LOG_INFO("DetectInit: end.");
     return 	1;
@@ -1178,14 +1178,14 @@ int DetectClose()
             LOG_DEBUG("DetectClose: discover roaming&shutdown device: "<<szText.c_str());
 
             bool bret;
-            bret = report_center.sendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+            bret = report_center.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
                 printf("send to data service fail\n");
             }
 
-            bret = report_block.sendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
+            bret = report_block.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
@@ -1229,14 +1229,14 @@ int DetectClose()
             LOG_DEBUG("DetectClose: discover shutdown device: "<<szText.c_str());
 
             bool bret;
-            bret = report_center.sendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+            bret = report_center.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
                 printf("send to data service fail\n");
             }
 
-            bret = report_block.sendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
+            bret = report_block.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
@@ -1259,8 +1259,8 @@ int DetectClose()
     g_mapUnRegKeep.swap(g_mapUnRegist);
     g_mapUnRegist.clear();
 
-    report_center.close();
-    report_block.close();	
+    report_center.Close();
+    report_block.Close();	
 
     printf("keep count = %lu\n", g_mapUnRegKeep.size());
 

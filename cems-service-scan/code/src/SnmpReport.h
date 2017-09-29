@@ -32,8 +32,8 @@ private:
 	std::string 	m_szAreaId;
 
 private:
-	CUpReport	m_RptCenter;
-	CUpReport	m_RptBlock;
+	UpReport	m_RptCenter;
+	UpReport	m_RptBlock;
 
 public:
 	bool sendpack(int fd, char* ip);

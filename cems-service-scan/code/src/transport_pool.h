@@ -36,7 +36,7 @@ public:
     Transport* GetTransport();
     int FreeTransport(Transport* trans);
     int DeleteTransport(Transport* trans);
-    void DestroyTransportPool();
+    void Destroy();
 private:
     std::vector<Transport> transport_pool_;
     pthread_mutex_t mutex_;

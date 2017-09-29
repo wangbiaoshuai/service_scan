@@ -5,7 +5,7 @@ using namespace std;
 
 TransportPool::TransportPool():
 transport_pool_(),
-max_size_(5),
+max_size_(50),
 min_size_(5),
 cur_size_(0),
 //max_idle_time_(5),
@@ -55,7 +55,7 @@ int TransportPool::Init(const std::string& ip, int port, int size)
         idle_num_++;
         pthread_mutex_unlock(&mutex_);
     }
-
+    LOG_INFO("Init: "<<size<<" trans has been opened, "<<idle_num_<<" trans is idle.");
     return 0;
 }
 
@@ -63,7 +63,7 @@ Transport* TransportPool::GetTransport()
 {
     Transport* ret = NULL;
     pthread_mutex_lock(&mutex_);
-    while(idle_num_ == 0)
+    while(idle_num_ == 0)  // 防止惊群效应
     {
         pthread_cond_wait(&cond_, &mutex_);
     }
@@ -80,6 +80,7 @@ Transport* TransportPool::GetTransport()
         }
     }
     pthread_mutex_unlock(&mutex_);
+    LOG_DEBUG("GetTransport: get one trans, remainder "<<idle_num_<<" trans.");
     return ret;
 }
 
@@ -97,6 +98,7 @@ int TransportPool::FreeTransport(Transport* trans)
     pthread_cond_signal(&cond_);
     pthread_mutex_unlock(&mutex_);
     trans = NULL;
+    LOG_DEBUG("FreeTransport: give back one trans, remainder "<<idle_num_<<" trans.");
     return 0;
 }
 
@@ -121,12 +123,13 @@ int TransportPool::DeleteTransport(Transport* trans)
         transport_pool_.erase(it);
         idle_num_ --;
         cur_size_ --;
+        LOG_WARN("DeleteTransport: "<<trans<<" trans loss effective, remainder "<<idle_num_<<"trans.");
     }
     pthread_mutex_unlock(&mutex_);
     return 0;
 }
 
-void TransportPool::DestroyTransportPool()
+void TransportPool::Destroy()
 {
     pthread_cond_broadcast(&cond_);
     pthread_mutex_lock(&mutex_);
@@ -139,7 +142,7 @@ void TransportPool::DestroyTransportPool()
         }
         catch(TException & tx)
         {
-            LOG_ERROR("DestroyTransportPool: close error("<<tx.what()<<")");
+            LOG_ERROR("Destroy: close error("<<tx.what()<<")");
         }
     }
     
@@ -150,5 +153,6 @@ void TransportPool::DestroyTransportPool()
 
     pthread_mutex_destroy(&mutex_);
     pthread_cond_destroy(&cond_);
+    LOG_INFO("Destroy: transport pool is destoryed.");
     return;
 }

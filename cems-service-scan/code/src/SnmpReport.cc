@@ -19,7 +19,7 @@ SnmpReport::SnmpReport()
 
 SnmpReport::~SnmpReport()
 {
-
+    m_RptCenter.Close();
 }
 
 std::string timeToString(int timeStamp)
@@ -321,7 +321,7 @@ bool SnmpReport::send(std::string szJson)
     //printf("%s\n", szlog.c_str());
 
     bool bret;
-    bret = m_RptCenter.sendToServer(SERVICE_CODE_CENTER, MINCODE_SNMP, calCRC(szText), false, szText);
+    bret = m_RptCenter.SendToServer(SERVICE_CODE_CENTER, MINCODE_SNMP, calCRC(szText), false, szText);
     if(!bret)
     {
         printf("send to data service fail\n");
@@ -357,8 +357,14 @@ bool SnmpReport::init( std::string szCenterIp, std::string szCenterPort, std::st
 
     ServiceReg cm;
 
-    m_RptCenter.init(szCenterIp, atoi(szCenterPort.c_str()));
-    m_RptBlock.init(szBlockIp, atoi(szBlockPort.c_str()));
+    m_RptCenter.Init(szCenterIp, atoi(szCenterPort.c_str()), 1);
+    m_RptBlock.Init(szBlockIp, atoi(szBlockPort.c_str()), 1);
+
+    if(m_RptCenter.Open() == false)
+    {
+        LOG_ERROR("SnmpReport::init open center trans error.");
+        return false;
+    }
 
     LOG_INFO("SnmpReport::init end.");
     return true;

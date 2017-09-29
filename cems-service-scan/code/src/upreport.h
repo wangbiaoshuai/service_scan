@@ -1,52 +1,30 @@
-#ifndef _M_REPORT
-#define _M_REPORT
+#ifndef _UPREPORT_H
+#define _UPREPORT_H
 
-#include "CommonService.h"
-#include <transport/TSocket.h>
-#include <transport/TBufferTransports.h>
-#include <protocol/TCompactProtocol.h>
-#include <protocol/TBinaryProtocol.h>
-#include <vector>
+#include "transport_pool.h"
 
-namespace cems{ namespace service{ namespace scan{
-
-using namespace boost;
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-
-//using namespace  ::com::vrv::im::service;
-using namespace com::vrv::cems::common::thrift::service;
-using boost::shared_ptr;
-
-class CUpReport
+namespace cems{ namespace service{ namespace scan{ 
+class UpReport
 {
 public:
-	CUpReport();
-	~CUpReport();
-public:
-	bool  init(std::string szIp, unsigned int port);
-	bool  open();
-	bool  close();
-	bool  sendToServer(std::string maxCode, std::string minCode, std::string checkCode, bool bzip, std::string szJdata);
-	bool  sendToServerOnce(std::string maxCode, std::string minCode, std::string checkCode, bool bzip, std::string szJdata );
+    UpReport();
+    ~UpReport();
+
+    bool Init(const std::string& ip, unsigned int port, int trans_num = 0);
+	bool Open();
+	void Close();
+	bool SendToServer(std::string maxCode, std::string minCode, std::string checkCode, bool bzip, std::string szJdata);
 
 private:
-	std::string m_szIp;
-	unsigned int m_port;
-    bool m_is_open;
+    TransportPool trans_pool_;
+    std::string server_ip_;
+    unsigned int server_port_;
+    int trans_num_;
 
 private:
-	boost::shared_ptr<TSocket>     m_socket; 
-	boost::shared_ptr<TTransport>  m_transport;
-	boost::shared_ptr<TProtocol>   m_protocol;	
-
-	CommonServiceClient*  m_pclient;
-
-public:
-	int	m_zipMode;
-	int m_encryptMode;
+	int	zip_mode_;
+	int encrypt_mode_;
 
 };
 }}}
-#endif
+#endif // _UPREPORT_H
