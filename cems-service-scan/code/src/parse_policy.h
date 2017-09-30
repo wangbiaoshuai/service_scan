@@ -29,11 +29,12 @@ public:
     int ReadPolicy(PolicyParam& policy_param);
     int WritePolicy(const std::string& data);
     bool GetPolicyCrc(std::string& crc);
-    int SetLogLevel(const std::string&  log_config_file, std::string log_level);
+    int SetLogLevel();
 
 private:
     ParsePolicy();
     long long SwitchTime(std::string cycle);
+    int SetLogLevel(const std::string&  log_config_file, std::string log_level);
 
 private:
     Mutex policy_mutex_;

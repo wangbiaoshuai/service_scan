@@ -18,6 +18,7 @@
 #include "parse_configure.h"
 #include "json/json.h"
 #include "CRC32.h"
+#include "parse_policy.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -99,6 +100,7 @@ void CommonServiceHandler::getDataTS(std::string& _return, const std::string& ma
         {
             LOG_INFO("getDataTS: update policy file success.");
             _return = WriteResult(maxCode, minCode,  "0",  "功能调用成功。", "");
+            ParsePolicy::GetInstance().SetLogLevel();
         }
         else
         {

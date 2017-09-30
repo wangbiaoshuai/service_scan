@@ -187,6 +187,65 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
             break;
         }
 
+/*        age_element = root_element->FirstChildElement("logBean");
+        if(age_element != NULL)
+        {
+            string log_level = age_element->Attribute("logLevel");
+            if(log_level != current_log_level_)
+            {
+                SetLogLevel(LOG_CONFIG_PATH, log_level);
+                current_log_level_ = log_level;
+            }
+        }*/
+
+        if(policy_param.interval_time.empty())
+            policy_param.interval_time = DEFAULT_INTERVAL; //60S
+        if(circle_time.empty())
+            policy_param.update_time = DEFAULT_UPDATE_TIME;
+
+    }while(0);
+
+    if(!document)
+    {
+        delete document;
+    }
+    return ret;
+}
+
+int ParsePolicy::SetLogLevel()
+{
+    TiXmlDocument *document = NULL;
+    TiXmlElement  *root_element = NULL;
+    TiXmlElement  *age_element  = NULL;
+    TiXmlElement  *child_element  = NULL;
+    document = new TiXmlDocument(policy_file_.c_str());
+    if(!document)
+    {
+        return -1;
+        LOG_ERROR("ReadPolicy: document is NULL.");
+    }
+
+    int ret = 0;
+    do
+    {
+        policy_mutex_.Lock();
+        if(document->LoadFile() == false)
+        {
+            ret = -1;
+            LOG_ERROR("ReadPolicy: load file failed");
+            policy_mutex_.Unlock();
+            break;
+        }
+        policy_mutex_.Unlock();
+
+        root_element = document->RootElement();
+        if(root_element == NULL)
+        {
+            ret = -1;
+            LOG_ERROR("ReadPolicy: policy file is empty");
+            break;
+        }
+
         age_element = root_element->FirstChildElement("logBean");
         if(age_element != NULL)
         {
@@ -197,12 +256,6 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
                 current_log_level_ = log_level;
             }
         }
-
-        if(policy_param.interval_time.empty())
-            policy_param.interval_time = DEFAULT_INTERVAL; //60S
-        if(circle_time.empty())
-            policy_param.update_time = DEFAULT_UPDATE_TIME;
-
     }while(0);
 
     if(!document)

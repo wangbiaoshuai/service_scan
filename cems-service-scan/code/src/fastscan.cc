@@ -239,7 +239,7 @@ int FastScan::StartScan()
             }
             if(DetectUnRegist(&range, area_id, it->second) != 0)
             {
-                LOG_ERROR("StartScan: DetectUnRegist failed");
+                LOG_ERROR("StartScan: DetectUnRegist failed.");
             }
         }
 
@@ -248,7 +248,11 @@ int FastScan::StartScan()
             LOG_ERROR("StartScan: DetectClose failed");
         }
 
-        int sleep_time = atoi(policy_param.interval_time.c_str()); 
+        int sleep_time = 60;
+        if(!(policy_param.interval_time.empty()))
+        {
+            sleep_time = atoi(policy_param.interval_time.c_str()); 
+        }
         LOG_INFO("StartScan: scan end. sleep " << sleep_time << "S...");
         sleep(sleep_time);
     }
