@@ -25,7 +25,7 @@ LIBS = -Wl,-rpath "./lib" \
 	   -lconfig_service_export -lvrv_service_export \
 	   -lrt
 
-CXXFLAGS = -Wall -g -O2 -Wall -D_REENTRANT -pthread -Wl,--as-needed ${INCLUDE} ${LIBS}
+CXXFLAGS = -Wall -g -O2 -Wall -D_REENTRANT -lpthread -Wl,--as-needed ${INCLUDE} ${LIBS}
 
 test_parse_config: src/test_parse_config.cc ../src/parse_configure.cc ../src/mutex.cc
 	${CXX} -o $@ $^ ${CXXFLAGS}
