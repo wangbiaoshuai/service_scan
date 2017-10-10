@@ -226,6 +226,9 @@ int init_daemon(void)  //创建守护进程
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTSTP, SIG_IGN);
     signal(SIGHUP, SIG_IGN);
+ 
+    //8)处理SIGCHLD信号
+    signal(SIGCHLD, SIG_IGN);
 
     //2)后台运行
     if(pid = fork())
@@ -264,8 +267,6 @@ int init_daemon(void)  //创建守护进程
     //7)重新设置文件创建掩码
     umask(0);
 
-    //8)处理SIGCHLD信号
-    signal(SIGCHLD, SIG_IGN);
     return 0;
 }
 
