@@ -89,7 +89,7 @@ Transport* TransportPool::GetTransport()
         struct timespec wait_time;
         gettimeofday(&now, NULL);
         wait_time.tv_sec = now.tv_sec + 5;
-        wait_time.tv_nsec = now.tv_usec + 1000;
+        wait_time.tv_nsec = now.tv_usec * 1000;
         pthread_cond_timedwait(&cond_, &mutex_, &wait_time);
     }
 
