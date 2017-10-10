@@ -15,6 +15,7 @@
 #include "md5module.h"
 #include "parse_configure.h"
 #include "gen_algorithm.h"
+#include "log.h"
 
 #define MAXBUFSIZE 1024 
 #define MAXINTERFACES 16
@@ -98,6 +99,7 @@ bool  CreateDirectory(const char * sPathName)
     return   1;
 }
 
+#if 0
 std::string GetCurrentPath()
 {
     std::string szPath;
@@ -121,6 +123,16 @@ std::string GetCurrentPath()
 
     //printf("当前路径 : %s\n", szPath.c_str());
     return szPath;
+}
+#endif
+
+std::string GetCurrentPath()
+{
+    char buf[255] = {0};
+    getcwd(buf, sizeof(buf));
+    string path(buf);
+    //LOG_DEBUG("GetCurrentPath: path="<<path.c_str());
+    return path;
 }
 
 std::string calCRC(std::string szText)

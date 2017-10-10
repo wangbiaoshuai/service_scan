@@ -253,7 +253,7 @@ int init_daemon(void)  //创建守护进程
     }
 
     //5)关闭打开的文件描述符
-    for(int i = 0; i < NOFILE; i++)
+    for(int i = 3; i < NOFILE; i++)
     {
         close(i);
     }
@@ -293,7 +293,21 @@ int main(int argc, char **argv)
     shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
     TThreadedServer server(processor, serverTransport, transportFactory, protocolFactory);
-    server.serve();
+    try
+    {
+        server.serve();
+    }
+    catch(TTransportException te)
+    {
+        string exception(te.what());
+        LOG_ERROR("main: TTransportException("<<exception.c_str()<<".)");
+        return -1;
+    }
+    catch(...)
+    {
+        LOG_ERROR("main: catch an Exception.");
+        return -1;
+    }
 
     fast_scan.Stop();
     service_reg.Stop();

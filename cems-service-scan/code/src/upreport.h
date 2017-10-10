@@ -20,6 +20,7 @@ private:
     std::string server_ip_;
     unsigned int server_port_;
     int trans_num_;
+    bool is_open_;
 
 private:
 	int	zip_mode_;

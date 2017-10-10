@@ -11,6 +11,7 @@ trans_pool_(),
 server_ip_(""),
 server_port_(0),
 trans_num_(0),
+is_open_(false),
 zip_mode_(0),
 encrypt_mode_(1)
 {
@@ -65,8 +66,10 @@ bool UpReport::Open()
     int res = trans_pool_.Init(server_ip_, server_port_, trans_num_);
     if(res < 0)
     {
+        is_open_ = false;
         return false;
     }
+    is_open_ = true;
     return true;
 }
 
@@ -77,6 +80,12 @@ void UpReport::Close()
 
 bool UpReport::SendToServer(std::string maxCode, std::string minCode, std::string checkCode, bool bzip, std::string szJdata )
 {
+    if(!is_open_)
+    {
+        LOG_ERROR("SendToServer: open error.");
+        return false;
+    }
+
     CGenAlgori genrial;
     std::string szRet;
     bool bret = false;
@@ -156,9 +165,17 @@ bool UpReport::SendToServer(std::string maxCode, std::string minCode, std::strin
         bret = true;
         trans_pool_.FreeTransport(trans);
     }
-    catch(TException & tx)
+    catch(TTransportException te)
     {
-        LOG_ERROR("sendToServer:Exception:"<<tx.what()<<", maxCode="<<maxCode<<", serverip="<<server_ip_<<", port="<<server_port_);
+        string exception(te.what());
+        LOG_ERROR("sendToServer: TTransportException("<<exception.c_str()<<").");
+        trans_pool_.DeleteTransport(trans);
+        bret = false;
+    }
+    catch(TException tx)
+    {
+        string exception(tx.what());
+        LOG_ERROR("sendToServer:Exception:"<<exception.c_str()<<", maxCode="<<maxCode<<", serverip="<<server_ip_<<", port="<<server_port_);
         trans_pool_.DeleteTransport(trans);
 
         bret =  false;

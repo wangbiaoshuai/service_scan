@@ -11,19 +11,21 @@ cur_size_(0),
 //max_idle_time_(5),
 idle_num_(0)
 {
+    pthread_mutex_init(&mutex_, NULL);
+    pthread_cond_init(&cond_, NULL);
 }
 
 TransportPool::~TransportPool()
 {
+    pthread_mutex_destroy(&mutex_);
+    pthread_cond_destroy(&cond_);
 }
 
 int TransportPool::Init(const std::string& ip, int port, int size)
 {
-    pthread_mutex_init(&mutex_, NULL);
-    pthread_cond_init(&cond_, NULL);
-
     if(ip.empty() || port <= 0 || size > max_size_)
     {
+        LOG_ERROR("TransportPool::Init failed, ip/port is illegal.");
         return -1;
     }
     if(size == 0)
@@ -34,18 +36,30 @@ int TransportPool::Init(const std::string& ip, int port, int size)
         Transport transport;
         transport.m_socket = boost::shared_ptr<TSocket>(new TSocket(ip.c_str(), port));
         transport.m_socket->setConnTimeout(1000 * 5); // set connection timeout 5S
+        transport.m_socket->setRecvTimeout(1000 * 30);
+        transport.m_socket->setSendTimeout(1000 * 30);
         transport.m_transport = boost::shared_ptr<TTransport>(new TFramedTransport(transport.m_socket));
         transport.m_protocol = boost::shared_ptr<TProtocol>(new TBinaryProtocol(transport.m_transport));
         transport.m_pclient = boost::shared_ptr<CommonServiceClient>(new CommonServiceClient(transport.m_protocol));
-        transport.m_use = false;
+        transport.m_use = 1;
         try
         {
             transport.m_transport->open();
         }
-        catch(TException & tx)
+        catch(TTransportException te)
         {
-            LOG_ERROR("Init: open connect ip=" << ip.c_str() << ", port=" << port << "open-ERROR:" << tx.what());
-
+            string exception(te.what());
+            LOG_ERROR("Init: catch TTransportException("<<exception.c_str()<<").");
+            return -1;
+        }
+        catch(TException tx)
+        {
+            LOG_ERROR("Init: catch an TException.");
+            return -1;
+        }
+        catch(...)
+        {
+            LOG_ERROR("Init: catch an Exception.");
             return -1;
         }
 
@@ -63,24 +77,35 @@ Transport* TransportPool::GetTransport()
 {
     Transport* ret = NULL;
     pthread_mutex_lock(&mutex_);
-    while(idle_num_ == 0)  // 防止惊群效应
+    if(cur_size_ == 0)
     {
-        pthread_cond_wait(&cond_, &mutex_);
+        LOG_WARN("GetTransport: get failed, pool size is "<<cur_size_<<", idle num is "<<idle_num_<<".");
+        pthread_mutex_unlock(&mutex_);
+        return ret;
+    }
+    while(cur_size_ != 0 && idle_num_ == 0)  // 防止惊群效应
+    {
+        struct timeval now;
+        struct timespec wait_time;
+        gettimeofday(&now, NULL);
+        wait_time.tv_sec = now.tv_sec + 5;
+        wait_time.tv_nsec = now.tv_usec + 1000;
+        pthread_cond_timedwait(&cond_, &mutex_, &wait_time);
     }
 
     vector<Transport>::iterator it;
     for(it = transport_pool_.begin(); it != transport_pool_.end(); ++it)
     {
-        if(it->m_use == false)
+        if(it->m_use == 1)
         {
             ret = &(*it);
-            it->m_use = true;
+            it->m_use = 0;
             idle_num_ --;
+            LOG_DEBUG("GetTransport: get one trans, remainder "<<idle_num_<<" trans.");
             break;
         }
     }
     pthread_mutex_unlock(&mutex_);
-    LOG_DEBUG("GetTransport: get one trans, remainder "<<idle_num_<<" trans.");
     return ret;
 }
 
@@ -93,7 +118,7 @@ int TransportPool::FreeTransport(Transport* trans)
     }
 
     pthread_mutex_lock(&mutex_);
-    trans->m_use = false;
+    trans->m_use = 1;
     idle_num_ ++;
     pthread_cond_signal(&cond_);
     pthread_mutex_unlock(&mutex_);
@@ -102,6 +127,7 @@ int TransportPool::FreeTransport(Transport* trans)
     return 0;
 }
 
+#if 0
 int TransportPool::DeleteTransport(Transport* trans)
 {
     if(trans == NULL)
@@ -121,11 +147,29 @@ int TransportPool::DeleteTransport(Transport* trans)
     if(it != transport_pool_.end())
     {
         transport_pool_.erase(it);
-        idle_num_ --;
+        //idle_num_ --;
         cur_size_ --;
-        LOG_WARN("DeleteTransport: "<<trans<<" trans loss effective, remainder "<<idle_num_<<"trans.");
+        LOG_WARN("DeleteTransport: "<<trans<<" trans loss effective, deleted it, pool size is "<<cur_size_<<",remainder "<<idle_num_<<" trans.");
     }
     pthread_mutex_unlock(&mutex_);
+    pthread_cond_broadcast(&cond_);
+    return 0;
+}
+#endif
+int TransportPool::DeleteTransport(Transport* trans)
+{
+    if(trans == NULL)
+    {
+        LOG_ERROR("DeleteTransport: trans is NULL.");
+        return -1;
+    }
+
+    pthread_mutex_lock(&mutex_);
+    idle_num_++;
+    trans->m_use = -1;
+    pthread_cond_signal(&cond_);
+    pthread_mutex_unlock(&mutex_);
+    LOG_WARN("DeleteTransport: "<<trans<<" trans loss effective, pool size is "<<cur_size_<<", remainder "<<idle_num_<<" trans.");
     return 0;
 }
 
@@ -140,9 +184,15 @@ void TransportPool::Destroy()
         {
             it->m_transport->close();
         }
-        catch(TException & tx)
+        catch(TTransportException te)
         {
-            LOG_ERROR("Destroy: close error("<<tx.what()<<")");
+            string exception(te.what());
+            LOG_ERROR("Destroy: close error("<<exception.c_str()<<").");
+        }
+        catch(TException tx)
+        {
+            string exception(tx.what());
+            LOG_ERROR("Destroy: close error("<<exception.c_str()<<").");
         }
     }
     
@@ -151,8 +201,6 @@ void TransportPool::Destroy()
     idle_num_ = 0;
     pthread_mutex_unlock(&mutex_);
 
-    pthread_mutex_destroy(&mutex_);
-    pthread_cond_destroy(&cond_);
     LOG_INFO("Destroy: transport pool is destoryed.");
     return;
 }

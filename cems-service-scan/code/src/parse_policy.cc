@@ -217,7 +217,6 @@ int ParsePolicy::SetLogLevel()
     TiXmlDocument *document = NULL;
     TiXmlElement  *root_element = NULL;
     TiXmlElement  *age_element  = NULL;
-    TiXmlElement  *child_element  = NULL;
     document = new TiXmlDocument(policy_file_.c_str());
     if(!document)
     {

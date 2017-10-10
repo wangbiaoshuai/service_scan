@@ -24,7 +24,8 @@ public:
 	boost::shared_ptr<TTransport>  m_transport;
 	boost::shared_ptr<TProtocol>   m_protocol;	
     boost::shared_ptr<CommonServiceClient> m_pclient;
-    bool m_use;
+    volatile int m_use;  //0没有被使用，-1不可用
+    Transport(): m_use(1) {}
 };
 
 class TransportPool
@@ -43,10 +44,10 @@ private:
     pthread_cond_t cond_;
 
 private:
-    int max_size_;   //最大连接数
-    int min_size_;   //最小连接数
-    int cur_size_;   //当前连接数
+    volatile int max_size_;   //最大连接数
+    volatile int min_size_;   //最小连接数
+    volatile int cur_size_;   //当前连接数
     //int max_idle_time_;   //空闲时间，超过该时间，删除连接数到最低
-    int idle_num_;   //空闲的连接数
+    volatile int idle_num_;   //空闲的连接数
 };
 #endif // _TRANSPORT_POOL_H

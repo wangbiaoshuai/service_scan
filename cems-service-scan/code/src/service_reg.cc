@@ -280,7 +280,8 @@ bool ServiceReg::RegistToConfSrv()
     }
     catch(TException & tx)
     {
-        LOG_ERROR("RegistToConfSrv: thrift exception:" << tx.what());
+        string exception(tx.what());
+        LOG_ERROR("RegistToConfSrv: thrift exception:" << exception.c_str());
         ret = false;
     }
 
@@ -355,7 +356,8 @@ string ServiceReg::RequestService(const std::string& ip, const std::string& port
     }
     catch(TException & tx)
     {
-        LOG_ERROR("RequestService: thrift exception:" << tx.what());
+        string exception(tx.what());
+        LOG_ERROR("RequestService: thrift exception:" << exception.c_str());
     }
     return res;
 }
@@ -383,7 +385,8 @@ void ServiceReg::QueryService(std::vector<ServiceConfigBean>& service_info, cons
     }
     catch(TException & tx)
     {
-        LOG_ERROR("QueryService: thrift exception:" << tx.what());
+        string exception(tx.what());
+        LOG_ERROR("QueryService: thrift exception:" << exception.c_str());
     }
     return;
 }
@@ -499,7 +502,8 @@ bool ServiceReg::HeartBeat()
     }
     catch(TException& tx)
     {
-        LOG_ERROR("HeartBeart: thrift exception:" << tx.what());
+        string exception(tx.what());
+        LOG_ERROR("HeartBeart: thrift exception:" << exception.c_str());
         ret = false;
     }
     return ret;

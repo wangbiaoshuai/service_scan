@@ -12,9 +12,9 @@ using namespace cems::service::scan;
 
 #define SERVER_IP "172.16.18.41"
 #define CENTER_PORT 9000
-#define THREAD_NUM 10
+#define THREAD_NUM 20
 #define SEND_NUM 50
-#define TRANS_NUM 10
+#define TRANS_NUM 5
 #define LOG_CONFIG_PATH "../config/log4cplus.properties"
 
 int main(int args, char* argv[])
@@ -33,9 +33,9 @@ void* thread_fun(void* arg)
         bool bret = context->SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
         if(!bret)
         {
-            LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
+            LOG_ERROR("SendToServer: send data to center service error, data:"<<szText.c_str());
         }
-        //sleep(1);
+        sleep(1);
     }
     pthread_exit(NULL);
 }
@@ -44,13 +44,18 @@ TEST(test_transport_pool, case1)
 {
     UpReport datacenter_report;
     datacenter_report.Init(SERVER_IP, CENTER_PORT, TRANS_NUM);
-    if(datacenter_report.Open() == false)
-    {
-        LOG_ERROR("data center report init error.");
-        return;
-    }
+    int i = 0;
     do
     {
+        if(datacenter_report.Open() == false)
+        {
+            LOG_ERROR("data center report init error.");
+            datacenter_report.Close();
+            i++;
+            sleep(6);
+            continue;
+        }
+
         pthread_t threads[THREAD_NUM];
         for(int i = 0; i < THREAD_NUM; i++)
         {
@@ -71,9 +76,9 @@ TEST(test_transport_pool, case1)
                 break;
             }
         }
-    }while(0);
-
-    datacenter_report.Close();
+        datacenter_report.Close();
+        i++;
+    }while(i < 3);
 }
 
 
