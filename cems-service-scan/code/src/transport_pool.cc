@@ -69,7 +69,7 @@ int TransportPool::Init(const std::string& ip, int port, int size)
         idle_num_++;
         pthread_mutex_unlock(&mutex_);
     }
-    LOG_INFO("Init: "<<size<<" trans has been opened, "<<idle_num_<<" trans is idle.");
+    LOG_INFO("Init: "<<cur_size_<<" trans has been opened, "<<idle_num_<<" trans is idle.");
     return 0;
 }
 
