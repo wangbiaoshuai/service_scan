@@ -196,7 +196,7 @@ void TransportPool::Destroy()
         }
     }
     
-    transport_pool_.clear();
+    vector<Transport> ().swap(transport_pool_);  //1.清空vector  2.释放内存
     cur_size_ = 0;
     idle_num_ = 0;
     pthread_mutex_unlock(&mutex_);
