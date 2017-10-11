@@ -2,6 +2,7 @@
 #define _UPREPORT_H
 
 #include "transport_pool.h"
+#include "gen_algorithm.h"
 
 namespace cems{ namespace service{ namespace scan{ 
 class UpReport
@@ -25,7 +26,7 @@ private:
 private:
 	int	zip_mode_;
 	int encrypt_mode_;
-
+    CGenAlgori genrial_;
 };
 }}}
 #endif // _UPREPORT_H

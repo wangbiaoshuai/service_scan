@@ -1,7 +1,6 @@
 #include "upreport.h"
 #include "parse_configure.h"
 #include "common_function.h"
-#include "gen_algorithm.h"
 #include "log.h"
 
 namespace cems{ namespace service{ namespace scan{
@@ -13,7 +12,8 @@ server_port_(0),
 trans_num_(0),
 is_open_(false),
 zip_mode_(0),
-encrypt_mode_(1)
+encrypt_mode_(1),
+genrial_()
 {
     std::string szPath = GetCurrentPath();
 
@@ -86,7 +86,6 @@ bool UpReport::SendToServer(std::string maxCode, std::string minCode, std::strin
         return false;
     }
 
-    CGenAlgori genrial;
     std::string szRet;
     bool bret = false;
     Transport* trans = NULL;
@@ -110,7 +109,7 @@ bool UpReport::SendToServer(std::string maxCode, std::string minCode, std::strin
 
         if(zip_mode_ != 0)
         {
-            szSend = genrial.Compress(szJdata, zip_mode_);
+            szSend = genrial_.Compress(szJdata, zip_mode_);
         }
         else
         {
@@ -122,7 +121,7 @@ bool UpReport::SendToServer(std::string maxCode, std::string minCode, std::strin
 
         if(encrypt_mode_ != 0)
         {
-            szSend = genrial.EnCrypt(szSend, encrypt.mode, encrypt.szKey);
+            szSend = genrial_.EnCrypt(szSend, encrypt.mode, encrypt.szKey);
         }
         else
         {
@@ -134,7 +133,7 @@ bool UpReport::SendToServer(std::string maxCode, std::string minCode, std::strin
 
         if(encrypt_mode_ != 0)
         {
-            szRet = genrial.DeCrypt(szRet, encrypt.mode, encrypt.szKey);
+            szRet = genrial_.DeCrypt(szRet, encrypt.mode, encrypt.szKey);
         }	
 
         /*sprintf(buffer, "发送数据 checkCode = %s,  szKey = %s, flag = %d", checkCode.c_str(), szKey.c_str(), flag);
