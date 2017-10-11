@@ -35,13 +35,14 @@
 
 ServiceName=CEMS-SERVICE-SCAN
 DAEMON_DIR="/usr/local/service/CEMS-SERVICE-SCAN/bin"
-DAEMON="$DAEMON_DIR/cemsscan"
+proc_name="cemsscan"
+DAEMON="$DAEMON_DIR/$proc_name"
 
 RETVAL=0
 
 function is_runing()
 {
-    pid=$(pgrep cemsscan)
+    pid=`pgrep ${proc_name}`
     if [ "$pid" != "" ] 
     then
         return 0
@@ -53,7 +54,7 @@ start () {
 	# start daemon
     [ -d "$DAEMON_DIR" ] && cd $DAEMON_DIR
 	echo -n $"Starting $ServiceName..."
-	$DAEMON
+	$DAEMON >/tmp/${proc_name}.log 2>&1
     RETVAL=$?
     sleep 1
     is_runing
@@ -70,7 +71,7 @@ stop () {
     is_runing
     if [ "$?" = "0" ]
     then
-        pgrep cemsscan | xargs -t -I{} kill -9 {} 1>&2 2>/dev/null
+        pgrep ${proc_name} | xargs -t -I{} kill -9 {} 1>&2 2>/dev/null
     else
         echo -e "\e[1;32m$ServiceName has stoped!\e[0m"
         return 0
@@ -89,7 +90,7 @@ status() {
 		local result
 		echo "check status of ${ServiceName}..."
 
-		result=$(pgrep cemsscan)
+		result=`pgrep ${proc_name}`
 
 		if [ "$result" != "" ]
         then
