@@ -1113,8 +1113,8 @@ int DetectInit()
     //szBlockIp = "192.168.32.6";
     /*szCenterIp = "192.168.0.132"; */
 
-    report_center.Init(szCenterIp, atoi(szCenterPort.c_str()), 2);
-    report_block.Init(szBlockIp, atoi(szBlockPort.c_str()), 2);
+    report_center.Init(szCenterIp, atoi(szCenterPort.c_str()), 1);
+    report_block.Init(szBlockIp, atoi(szBlockPort.c_str()), 1);
 
     LOG_INFO("DetectInit: end.");
     return 	1;

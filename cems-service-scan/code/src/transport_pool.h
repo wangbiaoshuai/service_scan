@@ -25,6 +25,7 @@ public:
 	boost::shared_ptr<TProtocol>   m_protocol;	
     boost::shared_ptr<CommonServiceClient> m_pclient;
     volatile int m_use;  //0没有被使用，-1不可用
+    volatile int index;  //用来保存该连接的索引
     Transport(): m_use(1) {}
 };
 
@@ -33,13 +34,15 @@ class TransportPool
 public:
     TransportPool();
     ~TransportPool();
-    int Init(const std::string& ip, int port, int size = 0);
+    int Init(const std::string& ip, int port, int size = 0, int max_size_ = -1);
     Transport* GetTransport();
     int FreeTransport(Transport* trans);
     int DeleteTransport(Transport* trans);
     void Destroy();
+    int AddTransport();
+
 private:
-    std::vector<Transport> transport_pool_;
+    std::map<int, Transport> transport_pool_;
     pthread_mutex_t mutex_;
     pthread_cond_t cond_;
 
@@ -49,5 +52,7 @@ private:
     volatile int cur_size_;   //当前连接数
     //int max_idle_time_;   //空闲时间，超过该时间，删除连接数到最低
     volatile int idle_num_;   //空闲的连接数
+    std::string server_ip_;
+    int server_port_;
 };
 #endif // _TRANSPORT_POOL_H
