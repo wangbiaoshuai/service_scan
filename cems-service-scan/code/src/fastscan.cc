@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "parse_policy.h"
 #include "parse_configure.h"
-#include "DetectHost.h"
+#include "detect_host.h"
 #include "service_reg.h"
 #include "json/json.h"
 #include "common_function.h"
@@ -19,7 +19,8 @@ FastScan::FastScan():
 scan_thread_(),
 update_policy_thread_(),
 stop_scan_(false),
-stop_update_policy_(false)
+stop_update_policy_(false),
+detect_host_()
 {
 }
 
@@ -196,7 +197,7 @@ int FastScan::StartSnmpTransmit()
 int FastScan::StartScan()
 {
     map<string, string> old_ip_range;
-    if(DetectInit() != 1)
+    if(detect_host_.Init() != 1)
     {
         LOG_ERROR("StartScan: DetectInit failed");
         return -1;
@@ -223,7 +224,7 @@ int FastScan::StartScan()
         if(CompareMap(old_ip_range, policy_param.ip_range) != 0)
         {
             LOG_INFO("StartScan: ip range has changed.");
-            DetectChange();
+            detect_host_.DetectChange();
         }
 
         old_ip_range = policy_param.ip_range;
@@ -237,13 +238,13 @@ int FastScan::StartScan()
                 LOG_WARN("StartScan: prase ip range is empty:" << it->first.c_str());
                 continue;
             }
-            if(DetectUnRegist(&range, area_id, it->second) != 0)
+            if(detect_host_.Start(&range, area_id, it->second) != 0)
             {
                 LOG_ERROR("StartScan: DetectUnRegist failed.");
             }
         }
 
-        if(DetectClose() != 0)
+        if(detect_host_.CalculateCloseDev() != 0)
         {
             LOG_ERROR("StartScan: DetectClose failed");
         }

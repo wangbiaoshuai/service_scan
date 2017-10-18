@@ -22,12 +22,14 @@ LIBS = -Wl,-R,"../lib" \
 
 ifeq ($(debug), 1)
 	DEBUG = -g
+else
+	DEBUG = -O1
 endif
 
 CXX = g++
-CXXFLAGS = -O1 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT ${DEBUG}
+CXXFLAGS = -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT ${DEBUG}
 PROJECT = cemsscan
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/DetectHost.o .build/upreport.o .build/conv.o .build/parse_policy.o .build/SnmpScan.o .build/SnmpReport.o .build/arp.o .build/transport_pool.o
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/detect_host.o .build/upreport.o .build/conv.o .build/parse_policy.o .build/SnmpScan.o .build/SnmpReport.o .build/arp.o .build/transport_pool.o
 
 all: foremost ${PROJECT}
 
@@ -77,7 +79,7 @@ ${PROJECT}: ${OBJECTS}
 .build/fastscan.o: src/fastscan.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
-.build/DetectHost.o: src/DetectHost.cc
+.build/detect_host.o: src/detect_host.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 .build/upreport.o: src/upreport.cc

@@ -231,7 +231,8 @@ int init_daemon(void)  //创建守护进程
     signal(SIGCHLD, SIG_IGN);
 
     //2)后台运行
-    if(pid = fork())
+    pid = fork();
+    if(pid > 0)
     {
         exit(0);
     }
@@ -245,7 +246,8 @@ int init_daemon(void)  //创建守护进程
     setsid();
 
     //4)禁止进程重新打开控制终端
-    if(pid = fork())
+    pid = fork();
+    if(pid > 0)
     {
         exit(0);
     }
@@ -270,7 +272,7 @@ int init_daemon(void)  //创建守护进程
     return 0;
 }
 
-int main(int argc, char **argv) 
+int main() 
 {
     init_daemon();
     INIT_LOG(LOG_CONFIG_PATH);

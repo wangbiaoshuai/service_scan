@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <string>
 #include <map>
+#include "detect_host.h"
 namespace cems{ namespace service{ namespace scan{
 
 typedef std::map<std::string, std::string> MAP_STRING;
@@ -40,6 +41,7 @@ private:
     pthread_t update_policy_thread_;
     bool stop_scan_;
     bool stop_update_policy_;
+    DetectHost detect_host_;
 };
 }}}
 #endif // FASTSCAN_H_
