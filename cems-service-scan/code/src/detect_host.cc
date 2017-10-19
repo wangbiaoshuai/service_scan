@@ -389,9 +389,6 @@ bool DetectHost::RecvIcmpPack()
                 device.szRegOrgId = org_id_;
                 device.szFireWall = "2";
                 device.count = 0;
-                string mac;
-                get_mac_addr(ip, mac);
-                device.szMac = mac;
 
                 unregister_dev_.insert(mapDev::value_type(uip, device));
 
@@ -405,6 +402,12 @@ bool DetectHost::RecvIcmpPack()
                 }
                 else
                 {
+                    if(device.szMac.empty())
+                    {
+                        string mac;
+                        get_mac_addr(ip, mac);
+                        device.szMac = mac;
+                    }
                     std::string szText = CreateSendText(device);
                     LOG_DEBUG("recvPingPack: discover unregister device: " << szText.c_str());
                     printf("PING发现未注册主机 = %s\n", szText.c_str());
