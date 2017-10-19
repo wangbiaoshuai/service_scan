@@ -834,7 +834,7 @@ void DetectHost::MakeQueryPack(struct Q_NETBIOSNS& nbns)
 
 int DetectHost::ClientProbe(MAP_COMMON* ipRange)
 {
-    LOG_DEBUG("ClientProbe: start.");
+    LOG_INFO("ClientProbe: start.");
     if((sockcd_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
         printf("socket udp create fail\n");
@@ -875,7 +875,7 @@ int DetectHost::ClientProbe(MAP_COMMON* ipRange)
     }
 
     close(sockcd_);
-    LOG_DEBUG("ClientProbe: end.");
+    LOG_INFO("ClientProbe: end.");
     return 0;
 }
 
@@ -949,7 +949,7 @@ int DetectHost::IcmpProbe(MAP_COMMON* const ipRange)
 
 int DetectHost::NbtProbe(MAP_COMMON* const ipRange)
 {
-    LOG_DEBUG("NbtProbe: start.");
+    LOG_INFO("NbtProbe: start.");
     nbt_scan_stop_ = 0;
     if((sockud_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
@@ -988,7 +988,7 @@ int DetectHost::NbtProbe(MAP_COMMON* const ipRange)
         printf("pthread_join error = %s\n", strerror(rc));
     }
     close(sockud_);
-    LOG_DEBUG("NbtProbe: end.");
+    LOG_INFO("NbtProbe: end.");
     return 0;
 }
 
