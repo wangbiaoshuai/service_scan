@@ -20,8 +20,14 @@ LIBS = -Wl,-R,"../lib" \
 	   -L./lib -lconfig_service_export -lvrv_service_export \
 	   -lssl -lcrypto -lboost_system
 
+ifeq ($(debug), 1)
+	DEBUG = -g
+else
+	DEBUG = -O2
+endif
+
 CXX = g++
-CXXFLAGS = -O1 -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT
+CXXFLAGS = -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT ${DEBUG}
 PROJECT = cemstrans
 OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o .build/start_trans.o .build/matchmsg.o .build/transferserver.o 
 
