@@ -393,7 +393,7 @@ void ServiceReg::QueryService(std::vector<ServiceConfigBean>& service_info, cons
 
 void* thread_function(void* contex)
 {
-    ServiceReg* srv = (ServiceReg*)contex;
+    ServiceReg* srv = static_cast<ServiceReg*>(contex);
     srv->StartHeartBeat();
     pthread_exit(NULL);
 }

@@ -136,21 +136,21 @@ int DetectHost::DepthScan()
 
 void* RecvRegProc(void* param)
 {
-    DetectHost* context = (DetectHost*)param;
+    DetectHost* context = static_cast<DetectHost*>(param);
     context->RecvClientPack();
     pthread_exit(NULL);
 }
 
 void* RecvPingProc(void* param)
 {
-    DetectHost* context = (DetectHost*)param;
+    DetectHost* context = static_cast<DetectHost*>(param);
     context->RecvIcmpPack();
     pthread_exit(NULL);
 }
 
 void* RecvNbtProc(void* param)
 {
-    DetectHost* context = (DetectHost*)param;
+    DetectHost* context = static_cast<DetectHost*>(param);
     context->RecvNbtPack();
     pthread_exit(NULL);
 }

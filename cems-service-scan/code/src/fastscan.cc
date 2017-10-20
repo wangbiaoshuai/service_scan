@@ -59,7 +59,7 @@ void* start_scan_function(void* context)
         mode = "0";  //0是标准模式，1是适配国网项目
     }
     LOG_INFO("start_scan_function: serivce mode="<<mode);
-    FastScan* ctx = (FastScan*)context;
+    FastScan* ctx = static_cast<FastScan*>(context);
     if(mode == "0")
     {    
         ctx->StartScan();
@@ -74,7 +74,7 @@ void* start_scan_function(void* context)
 
 void* start_update_polity_function(void* context)
 {
-    FastScan* ctx = (FastScan*)context;
+    FastScan* ctx = static_cast<FastScan*>(context);
     ctx->StartUpdatePolicy();
     LOG_INFO("update policy thread stoped.");
     pthread_exit(NULL);
