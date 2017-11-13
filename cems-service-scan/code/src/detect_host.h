@@ -39,6 +39,8 @@ private:
     int SendPacks( char* start, char* end, SEND_TYPE type);
     bool SendPack(unsigned long uip, SEND_TYPE type); 
     std::string CreateSendText(DEV_INFO & info);
+    int GetDataCenterIp();
+    int GetBlockIp();
 
 public:
     int SendDetectPack(MAP_COMMON* ipRange, SEND_TYPE send_type);

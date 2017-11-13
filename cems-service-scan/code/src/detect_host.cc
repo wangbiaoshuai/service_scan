@@ -58,20 +58,45 @@ int DetectHost::Init(int mode)
 {
     LOG_INFO("DetectInit: begin.");
     detect_mode_ = mode;
+
+    GetDataCenterIp();
+    GetBlockIp();
+
+    LOG_INFO("Init: end.");
+    return 	1;
+}
+
+int DetectHost::GetDataCenterIp()
+{
     ServiceReg cm;
 
-    std::string szCenterIp, szBlockIp;
-    std::string szCenterPort, szBlockPort;
-    std::string szCenterOrgId, szBlockOrgId;
+    std::string szCenterIp;
+    std::string szCenterPort;
+    std::string szCenterOrgId;
 
     if(cm.Fetch(SERVICE_CODE_CENTER, szCenterOrgId, szCenterIp, szCenterPort))
     {
-        LOG_DEBUG("Init: fetch data service ip=" << szCenterIp << ", port=" << szCenterPort);
+        LOG_DEBUG("GetDataCenterIp: fetch data service ip=" << szCenterIp << ", port=" << szCenterPort);
     }
     else
     {
-        LOG_ERROR("Init: fetch data service error.");
+        LOG_ERROR("GetDataCenterIp: fetch data service error.");
     }
+
+    if(report_center_.Init(szCenterIp, atoi(szCenterPort.c_str()), 1) == false)
+    {
+        return -1;
+    }
+    return 0;
+}
+
+int DetectHost::GetBlockIp()
+{
+    ServiceReg cm;
+
+    std::string szBlockIp;
+    std::string szBlockPort;
+    std::string szBlockOrgId;
 
     if(cm.Fetch(SERVICE_CODE_BLOCK, szBlockOrgId, szBlockIp, szBlockPort))
     {
@@ -82,11 +107,11 @@ int DetectHost::Init(int mode)
         LOG_ERROR("Init: fetch block service error.");
     }
 
-    report_center_.Init(szCenterIp, atoi(szCenterPort.c_str()), 1);
-    report_block_.Init(szBlockIp, atoi(szBlockPort.c_str()), 1);
-
-    LOG_INFO("Init: end.");
-    return 	1;
+    if(report_block_.Init(szBlockIp, atoi(szBlockPort.c_str()), 1) == false)
+    {
+        return -1;
+    }
+    return 0;
 }
 
 void DetectHost::DetectChange()
@@ -103,14 +128,20 @@ int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string sz
     //从这里开始上报数据，所以需要打开连接。
     if(!report_center_.Open())
     {
-        LOG_ERROR("DetectInit: open center report error.");
-        return -1;
+        LOG_ERROR("Start: open center report error.");
+        if(GetDataCenterIp() == false)
+        {
+            LOG_ERROR("Start: GetDataCenterIp failed.");
+        }
     }
 
     if(!report_block_.Open())
     {
-        LOG_ERROR("DetectInit: open block report error.");
-        return -1;
+        LOG_ERROR("Start: open block report error.");
+        if(GetBlockIp() == false)
+        {
+            LOG_ERROR("Start: GetBlockIp failed.");
+        }
     }
 
     area_id_ = szAreaId;

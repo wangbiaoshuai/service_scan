@@ -23,7 +23,7 @@ LIBS = -Wl,-R,"../lib" \
 ifeq ($(debug), 1)
 	DEBUG = -g
 else
-	DEBUG = -O1
+	DEBUG = -O2
 endif
 
 CXX = g++

@@ -220,8 +220,8 @@ int ParsePolicy::SetLogLevel()
     document = new TiXmlDocument(policy_file_.c_str());
     if(!document)
     {
+        LOG_ERROR("SetLogLevel: document is NULL.");
         return -1;
-        LOG_ERROR("ReadPolicy: document is NULL.");
     }
 
     int ret = 0;
@@ -231,7 +231,7 @@ int ParsePolicy::SetLogLevel()
         if(document->LoadFile() == false)
         {
             ret = -1;
-            LOG_ERROR("ReadPolicy: load file failed");
+            LOG_ERROR("SetLogLevel: load file failed");
             policy_mutex_.Unlock();
             break;
         }
@@ -241,7 +241,7 @@ int ParsePolicy::SetLogLevel()
         if(root_element == NULL)
         {
             ret = -1;
-            LOG_ERROR("ReadPolicy: policy file is empty");
+            LOG_ERROR("SetLogLevel: policy file is empty");
             break;
         }
 
@@ -253,6 +253,7 @@ int ParsePolicy::SetLogLevel()
             {
                 SetLogLevel(LOG_CONFIG_PATH, log_level);
                 current_log_level_ = log_level;
+                LOG_INFO("SetLogLevel: log level has been set "<<current_log_level_);
             }
         }
     }while(0);
