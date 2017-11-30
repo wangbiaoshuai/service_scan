@@ -17,7 +17,7 @@ LIBS = -Wl,-R,"../lib" \
 	   -L${LOG_PATH}/lib -llog4cplus \
 	   -L${JSON_PATH}/lib -ljson \
 	   -L${TINYXML_PATH}/lib -ltinyxml \
-	   -L./lib -lconfig_service_export -lvrv_service_export \
+	   -L./lib -lconfig_service_export -lvrv_service_export -ldevscan \
 	   -lssl -lcrypto
 
 ifeq ($(debug), 1)

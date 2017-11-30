@@ -1,11 +1,14 @@
 #include "detect_host.h"
 
+#include <sys/wait.h>
+
 #include "json/json.h"
 #include "conv.h"
 #include "common_function.h"
 #include "log.h"
 #include "service_reg.h"
 #include "arp.h"
+#include "dev_identify.h"
 
 using namespace cems::service::scan;
 using namespace std;
@@ -31,6 +34,7 @@ DetectHost::DetectHost():
 detect_mode_(1),
 //unregister_mutex_(),
 //register_mutex_(),
+//nmap_dev_mutex_(),
 report_block_(),
 report_center_(),
 unregister_dev_(),
@@ -38,6 +42,7 @@ unregister_dev_keep_(),
 register_dev_(),
 register_dev_keep_(),
 roaming_dev_(),
+nmap_dev_(),
 area_id_(""),
 org_id_(""),
 register_scan_stop_(0),
@@ -147,11 +152,8 @@ int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string sz
     area_id_ = szAreaId;
     org_id_ = szOrgId;
 
-    if(detect_mode_ == 1)
-    {
-        StandardScan(ipRange);
-    }
-    else if(detect_mode_ == 1)
+    StandardScan(ipRange);
+    if(detect_mode_ == 2)
     {
         DepthScan();
     }
@@ -162,6 +164,62 @@ int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string sz
 int DetectHost::DepthScan()
 {
     LOG_INFO("DepthScan: begin.");
+    mapDev::iterator it;
+    for(it = nmap_dev_.begin(); it != nmap_dev_.end(); ++it)
+    {
+        int pid = fork();
+        if(pid == 0)
+        {
+            if(!it->second.szDevId.empty())
+            {
+                LOG_DEBUG("DepthScan: device("<<it->second.szIP.c_str()<<")---->"<<it->second.szDevId.c_str());
+                continue;
+            }
+            devscan_result_s dev_info = {0};
+            int res = devscan_identify(htonl(it->first), &dev_info);
+            if(res < 0)
+            {
+                LOG_WARN("DepthScan: nmap scan deivce("<<it->second.szIP.c_str()<<") failed.");
+                continue;
+            }
+            if(dev_info.status == 0)
+            {
+                LOG_WARN("DepthScan: device("<<it->second.szIP.c_str()<<") is unreachable.");
+                continue;
+            }
+            it->second.szDevId = dev_info.devtype_en_name; 
+            //进行上报
+            LOG_DEBUG("DepthScan: nmap scan ip("<<it->second.szIP.c_str()<<")---->"<<it->second.szDevId.c_str());
+            std::string szText = CreateSendText(it->second);
+            LOG_DEBUG("DepthScan: discover unregister device: "<<szText.c_str());
+            bool bret;
+            bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+            if(!bret)
+            {
+                printf("send to data service fail\n");
+                LOG_ERROR("DepthScan: send data to center service failed. data:"<<szText);
+            }
+
+            bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
+            if(!bret)
+            {
+                printf("send to block service fail\n");
+                LOG_ERROR("DepthScan: send data to block service failed. data:"<<szText);
+            }
+            exit(0);
+        }
+        else if(pid < 0)
+        {
+            LOG_ERROR("DepthScan: fork error("<<strerror(errno)<<").");
+            continue;
+        }
+        else
+        {
+            wait(NULL);
+        }
+    }
+    mapDev ().swap(nmap_dev_);
+    LOG_INFO("DepthScan: end.");
     return 0;
 }
 
@@ -307,6 +365,10 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
             {
                 printf("send to block service fail\n");
                 LOG_ERROR("parseClientPack: send data to block service failed. data:"<<szText);
+            }
+            if(detect_mode_ == 2)
+            {
+                nmap_dev_.insert(mapDev::value_type(uip, devinfo));
             }
         }
         else
@@ -461,6 +523,10 @@ bool DetectHost::RecvIcmpPack()
                     {
                         unregister_dev_keep_.insert(mapDev::value_type(uip, device));
                     }
+                    if(detect_mode_ == 2)
+                    {
+                        nmap_dev_.insert(mapDev::value_type(uip, device));
+                    }
                 }
             }
         }
@@ -594,6 +660,10 @@ void DetectHost::RecvNbtPack()
                 {
                     //如果上报成功，则将该设备定义为老的未注册设备。
                     unregister_dev_keep_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
+                }
+                if(detect_mode_ == 2)
+                {
+                    nmap_dev_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
                 }
             }
         }
@@ -1074,6 +1144,10 @@ int DetectHost::CalculateCloseDev()
                 printf("send to block service fail\n");
 
             }
+            if(detect_mode_ == 2)
+            {
+                nmap_dev_.insert(*it);
+            }
             register_dev_keep_.erase(it++);
             continue;
         }
@@ -1118,7 +1192,11 @@ int DetectHost::CalculateCloseDev()
                 LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
                 printf("send to block service fail\n");
 
-            } 
+            }
+            if(detect_mode_ == 2)
+            {
+                nmap_dev_.insert(*it);
+            }
             unregister_dev_keep_.erase(it++);
             continue;
         }

@@ -197,7 +197,7 @@ int FastScan::StartSnmpTransmit()
 int FastScan::StartScan()
 {
     map<string, string> old_ip_range;
-    if(detect_host_.Init() != 1)
+    if(detect_host_.Init(2) != 1)
     {
         LOG_ERROR("StartScan: DetectInit failed");
         return -1;

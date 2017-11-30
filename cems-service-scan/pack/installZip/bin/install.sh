@@ -28,7 +28,7 @@ chmod u+s  cemsscan
 #chmod +x   libMCurl.so
 
 #sh exec
-chmod +x   restart.sh
+#chmod +x   restart.sh
 chmod +x   self.sh
 
 #change own group

@@ -67,6 +67,7 @@ private:
     int detect_mode_;
     //Mutex unregister_mutex_;
     //Mutex register_mutex_;
+    //Mutex nmap_dev_mutex_;
 
     UpReport report_block_;
     UpReport report_center_;
@@ -77,6 +78,8 @@ private:
     mapDev register_dev_;
     mapDev register_dev_keep_;
     mapDev roaming_dev_;
+
+    mapDev nmap_dev_;
 
     std::string area_id_;
     std::string org_id_;
