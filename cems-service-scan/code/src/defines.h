@@ -38,6 +38,22 @@ struct  DEV_INFO
     std::string szAreaId;
     std::string szRegAreaId;
     int    count;
+    struct DEV_INFO operator=(const struct DEV_INFO& device)
+    {
+        this->szIP = device.szIP;
+        this->szGroupName = device.szGroupName;
+        this->szHostName = device.szHostName;
+        this->szMac = device.szMac;
+        this->szBoot = device.szBoot;
+        this->szDevId = device.szDevId;
+        this->szFireWall = device.szFireWall;
+        this->szOrgId = device.szOrgId;
+        this->szRegOrgId = device.szRegOrgId;
+        this->szAreaId = device.szAreaId;
+        this->szRegAreaId = device.szRegAreaId;
+        this->count = device.count;
+        return *this;
+    }
 };
 
 struct THD_PARAM

@@ -208,7 +208,7 @@ int DetectHost::DepthScan()
             sleep(30);
         }
         nmap_dev_mutex_.Lock();
-        if(nmap_dev_.empty())
+        while(nmap_dev_.empty())
         {
             nmap_dev_mutex_.Unlock();
             sleep(30);

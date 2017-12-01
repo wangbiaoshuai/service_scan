@@ -21,7 +21,7 @@ LIBS = -Wl,-R,"../lib" \
 	   -lssl -lcrypto
 
 ifeq ($(debug), 1)
-	DEBUG = -g
+	DEBUG = -g -O0
 else
 	DEBUG = -O2
 endif
