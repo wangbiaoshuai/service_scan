@@ -54,7 +54,7 @@ start () {
 	# start daemon
     [ -d "$DAEMON_DIR" ] && cd $DAEMON_DIR
 	echo -n $"Starting $ServiceName..."
-	$DAEMON >/tmp/${proc_name}.log 2>&1
+	$DAEMON
     RETVAL=$?
     sleep 1
     is_runing

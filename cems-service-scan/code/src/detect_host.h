@@ -3,6 +3,8 @@
 
 #include "defines.h"
 #include "upreport.h"
+#include "mutex.h"
+
 #include <netinet/ip_icmp.h>
 
 namespace cems{ namespace service{ namespace scan{
@@ -34,7 +36,6 @@ public:
     void Close();
 
 private:
-    int DepthScan();
     int StandardScan(MAP_COMMON * ipRange);
     int SendPacks( char* start, char* end, SEND_TYPE type);
     bool SendPack(unsigned long uip, SEND_TYPE type); 
@@ -47,6 +48,7 @@ public:
     void RecvClientPack();
     bool RecvIcmpPack();
     void RecvNbtPack();
+    int DepthScan();
 
 private:
     int ClientProbe(MAP_COMMON * ipRange);
@@ -67,7 +69,7 @@ private:
     int detect_mode_;
     //Mutex unregister_mutex_;
     //Mutex register_mutex_;
-    //Mutex nmap_dev_mutex_;
+    Mutex nmap_dev_mutex_;
 
     UpReport report_block_;
     UpReport report_center_;
@@ -79,7 +81,7 @@ private:
     mapDev register_dev_keep_;
     mapDev roaming_dev_;
 
-    mapDev nmap_dev_;
+    list<DEV_INFO> nmap_dev_;
 
     std::string area_id_;
     std::string org_id_;
@@ -91,6 +93,9 @@ private:
     int sockfd_;
     int sockud_;
     int sockcd_;
+    pthread_t dep_scan_thread_;
+    volatile int dep_scan_stop_;
+    volatile int dep_scan_pause_;
 };
 }}}
 #endif // _DETECT_HOST_H

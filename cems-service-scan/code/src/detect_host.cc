@@ -34,7 +34,7 @@ DetectHost::DetectHost():
 detect_mode_(1),
 //unregister_mutex_(),
 //register_mutex_(),
-//nmap_dev_mutex_(),
+nmap_dev_mutex_(),
 report_block_(),
 report_center_(),
 unregister_dev_(),
@@ -51,12 +51,27 @@ nbt_scan_stop_(0),
 pid_(0),
 sockfd_(0),
 sockud_(0),
-sockcd_(0)
+sockcd_(0),
+dep_scan_thread_(0),
+dep_scan_stop_(0),
+dep_scan_pause_(1)
 {
 }
 
 DetectHost::~DetectHost()
 {
+    dep_scan_pause_ = 0;
+    dep_scan_stop_ = 1;
+ 
+    report_block_.Close();
+    report_center_.Close();
+}
+
+void* dep_scan_function(void* context)
+{
+    DetectHost* ctx = static_cast<DetectHost*>(context);
+    ctx->DepthScan();
+    pthread_exit(NULL);
 }
 
 int DetectHost::Init(int mode)
@@ -66,6 +81,41 @@ int DetectHost::Init(int mode)
 
     GetDataCenterIp();
     GetBlockIp();
+    //从这里开始上报数据，所以需要打开连接。
+    if(!report_center_.Open())
+    {
+        LOG_ERROR("Start: open center report error.");
+        if(GetDataCenterIp() == false)
+        {
+            LOG_ERROR("Start: GetDataCenterIp failed.");
+        }
+    }
+
+    if(!report_block_.Open())
+    {
+        LOG_ERROR("Start: open block report error.");
+        if(GetBlockIp() == false)
+        {
+            LOG_ERROR("Start: GetBlockIp failed.");
+        }
+    }
+
+    if(dep_scan_thread_ == 0)
+    {
+        dep_scan_stop_ = 0;
+        dep_scan_pause_ = 1;
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+        int res = pthread_create(&dep_scan_thread_, &attr, dep_scan_function, this);
+        if(res < 0)
+        {
+            LOG_ERROR("Start: create depth scan thread error("<<strerror(errno)<<").");
+            pthread_attr_destroy(&attr);
+            return -1;
+        }
+        pthread_attr_destroy(&attr);
+    }
 
     LOG_INFO("Init: end.");
     return 	1;
@@ -130,33 +180,20 @@ void DetectHost::DetectChange()
 
 int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId)
 {
-    //从这里开始上报数据，所以需要打开连接。
-    if(!report_center_.Open())
-    {
-        LOG_ERROR("Start: open center report error.");
-        if(GetDataCenterIp() == false)
-        {
-            LOG_ERROR("Start: GetDataCenterIp failed.");
-        }
-    }
-
-    if(!report_block_.Open())
-    {
-        LOG_ERROR("Start: open block report error.");
-        if(GetBlockIp() == false)
-        {
-            LOG_ERROR("Start: GetBlockIp failed.");
-        }
-    }
-
     area_id_ = szAreaId;
     org_id_ = szOrgId;
 
-    StandardScan(ipRange);
     if(detect_mode_ == 2)
     {
-        DepthScan();
+        dep_scan_pause_ = 0;
+        LOG_INFO("Start: depth scan continue...");
     }
+    else
+    {
+        dep_scan_pause_ = 1;
+        LOG_INFO("Start: depth scan pause...");
+    }
+    StandardScan(ipRange);
 
     return 0;
 }
@@ -164,33 +201,49 @@ int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string sz
 int DetectHost::DepthScan()
 {
     LOG_INFO("DepthScan: begin.");
-    mapDev::iterator it;
-    for(it = nmap_dev_.begin(); it != nmap_dev_.end(); ++it)
+    while(!dep_scan_stop_)
     {
+        while(dep_scan_pause_)
+        {
+            sleep(30);
+        }
+        nmap_dev_mutex_.Lock();
+        if(nmap_dev_.empty())
+        {
+            nmap_dev_mutex_.Unlock();
+            sleep(30);
+            nmap_dev_mutex_.Lock();
+        }
+
+        DEV_INFO device;
+        device = nmap_dev_.front();
+        nmap_dev_.pop_front();
+        nmap_dev_mutex_.Unlock();
+
         int pid = fork();
         if(pid == 0)
         {
-            if(!it->second.szDevId.empty())
+            if(!device.szDevId.empty())
             {
-                LOG_DEBUG("DepthScan: device("<<it->second.szIP.c_str()<<")---->"<<it->second.szDevId.c_str());
-                continue;
+                LOG_DEBUG("DepthScan: device("<<device.szIP.c_str()<<")---->"<<device.szDevId.c_str());
+                exit(0);
             }
             devscan_result_s dev_info = {0};
-            int res = devscan_identify(htonl(it->first), &dev_info);
+            int res = devscan_identify(inet_addr(device.szIP.c_str()), &dev_info);
             if(res < 0)
             {
-                LOG_WARN("DepthScan: nmap scan deivce("<<it->second.szIP.c_str()<<") failed.");
-                continue;
+                LOG_WARN("DepthScan: nmap scan deivce("<<device.szIP.c_str()<<") failed.");
+                exit(-1);
             }
             if(dev_info.status == 0)
             {
-                LOG_WARN("DepthScan: device("<<it->second.szIP.c_str()<<") is unreachable.");
-                continue;
+                LOG_WARN("DepthScan: device("<<device.szIP.c_str()<<") is unreachable.");
+                exit(-1);
             }
-            it->second.szDevId = dev_info.devtype_en_name; 
+            device.szDevId = dev_info.devtype_en_name; 
             //进行上报
-            LOG_DEBUG("DepthScan: nmap scan ip("<<it->second.szIP.c_str()<<")---->"<<it->second.szDevId.c_str());
-            std::string szText = CreateSendText(it->second);
+            LOG_DEBUG("DepthScan: nmap scan ip("<<device.szIP.c_str()<<")---->"<<device.szDevId.c_str());
+            std::string szText = CreateSendText(device);
             LOG_DEBUG("DepthScan: discover unregister device: "<<szText.c_str());
             bool bret;
             bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
@@ -215,10 +268,10 @@ int DetectHost::DepthScan()
         }
         else
         {
-            wait(NULL);
+            wait(NULL); //防止信号中断该函数，导致子进程回收资源失败。
         }
     }
-    mapDev ().swap(nmap_dev_);
+    list<DEV_INFO> ().swap(nmap_dev_);
     LOG_INFO("DepthScan: end.");
     return 0;
 }
@@ -368,7 +421,10 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
             }
             if(detect_mode_ == 2)
             {
-                nmap_dev_.insert(mapDev::value_type(uip, devinfo));
+                //nmap_dev_.insert(mapDev::value_type(uip, devinfo));
+                nmap_dev_mutex_.Lock();
+                nmap_dev_.push_back(devinfo);
+                nmap_dev_mutex_.Unlock();
             }
         }
         else
@@ -525,7 +581,10 @@ bool DetectHost::RecvIcmpPack()
                     }
                     if(detect_mode_ == 2)
                     {
-                        nmap_dev_.insert(mapDev::value_type(uip, device));
+                        //nmap_dev_.insert(mapDev::value_type(uip, device));
+                        nmap_dev_mutex_.Lock();
+                        nmap_dev_.push_back(device);
+                        nmap_dev_mutex_.Unlock();
                     }
                 }
             }
@@ -663,7 +722,10 @@ void DetectHost::RecvNbtPack()
                 }
                 if(detect_mode_ == 2)
                 {
-                    nmap_dev_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
+                    //nmap_dev_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
+                    nmap_dev_mutex_.Lock();
+                    nmap_dev_.push_back(device);
+                    nmap_dev_mutex_.Unlock();
                 }
             }
         }
@@ -1146,7 +1208,10 @@ int DetectHost::CalculateCloseDev()
             }
             if(detect_mode_ == 2)
             {
-                nmap_dev_.insert(*it);
+                //nmap_dev_.insert(*it);
+                nmap_dev_mutex_.Lock();
+                nmap_dev_.push_back(it->second);
+                nmap_dev_mutex_.Unlock();
             }
             register_dev_keep_.erase(it++);
             continue;
@@ -1195,7 +1260,10 @@ int DetectHost::CalculateCloseDev()
             }
             if(detect_mode_ == 2)
             {
-                nmap_dev_.insert(*it);
+                //nmap_dev_.insert(*it);
+                nmap_dev_mutex_.Lock();
+                nmap_dev_.push_back(it->second);
+                nmap_dev_mutex_.Unlock();
             }
             unregister_dev_keep_.erase(it++);
             continue;
@@ -1205,8 +1273,7 @@ int DetectHost::CalculateCloseDev()
 
     mapDev ().swap(register_dev_);
     mapDev ().swap(unregister_dev_);
-    report_block_.Close();
-    report_center_.Close();
+
     return 0;
 }
 
