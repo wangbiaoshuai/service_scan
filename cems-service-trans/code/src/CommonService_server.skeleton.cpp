@@ -7,6 +7,9 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/server/TThreadedServer.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "log.h"
 #include "service_reg.h"
@@ -28,6 +31,7 @@ using namespace  ::com::vrv::cems::common::thrift::service;
 using namespace cems::service::scan;
 
 #define COMPRESS_MODE 1
+const char* log_file = "/tmp/cemstrans.stdout";
 
 class CommonServiceHandler : virtual public CommonServiceIf 
 {
@@ -121,6 +125,7 @@ bool CommonServiceHandler::IsValidCrc(const std::string& szCrc, const std::strin
     }
 }
 
+#if 0
 #include <signal.h>
 #include <sys/stat.h>
 int init_daemon(void)  //创建守护进程
@@ -175,6 +180,74 @@ int init_daemon(void)  //创建守护进程
 
     //7)重新设置文件创建掩码
     umask(0);
+
+    return 0;
+}
+#endif
+#include <signal.h>
+#include <sys/stat.h>
+int init_daemon(void)  //创建守护进程
+{
+    int pid;
+    string cur_path = GetCurrentPath();
+
+    //1)屏蔽一些阻断信号
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+ 
+    //8)处理SIGCHLD信号
+    //signal(SIGCHLD, SIG_IGN);
+
+    //2)后台运行
+    pid = fork();
+    if(pid > 0)
+    {
+        exit(0);
+    }
+    else if(pid < 0)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    //3)脱离控制终端、登录会话和进程组
+    setsid();
+
+    //4)禁止进程重新打开控制终端
+    /*pid = fork();
+    if(pid > 0)
+    {
+        exit(0);
+    }
+    else if(pid < 0)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }*/
+
+    //5)关闭打开的文件描述符
+    for(int i = 0; i < NOFILE; i++)
+    {
+        close(i);
+    }
+
+    //6)改变当前工作目录
+    chdir(cur_path.c_str());
+
+    //7)重新设置文件创建掩码
+    umask(0);
+
+    //9)重定向标准输出
+    int fd = creat(log_file, 0644);
+    if(fd < 0)
+    {
+        perror("creat");
+    }
+    dup2(fd, 1);
+    dup2(fd, 2);
+    close(fd);
 
     return 0;
 }

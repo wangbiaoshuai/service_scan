@@ -495,10 +495,10 @@ namespace transfer
       if(error.value() != boost::system::errc::operation_canceled)
       {
         safe_delete(this,map_key_);
-	if(map_key_.empty())
-	{
-	     delete this;
-	}
+        if(map_key_.empty())
+        {
+          delete this;
+        }
       }
     }
   }
