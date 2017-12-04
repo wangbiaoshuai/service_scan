@@ -29,8 +29,8 @@ public:
     DetectHost();
     ~DetectHost();
 
-    int Init(int mode = 1);
-    int Start(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId);
+    int Init();
+    int Start(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId, int mode = 0);
     void DetectChange();
     int CalculateCloseDev();
     void Close();
@@ -66,7 +66,7 @@ private:
     void MakeQueryPack(struct Q_NETBIOSNS& nbns);
 
 private:
-    int detect_mode_;
+    int detect_mode_;  //0是标准扫描，1是深度扫描
     //Mutex unregister_mutex_;
     //Mutex register_mutex_;
     Mutex nmap_dev_mutex_;

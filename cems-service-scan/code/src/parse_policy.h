@@ -17,6 +17,7 @@ typedef struct
     std::map<std::string, std::string> ip_range;
     std::string interval_time;
     long long update_time;
+    int scan_mode;
 } PolicyParam;
 
 class ParsePolicy

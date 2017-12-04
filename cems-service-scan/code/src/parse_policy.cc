@@ -13,7 +13,7 @@ using namespace std;
 ParsePolicy::ParsePolicy() :
 policy_mutex_(),
 policy_file_(""),
-current_log_level_("DEBUG")
+current_log_level_("")
 {
 }
 
@@ -151,6 +151,10 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
                 value = age_element->Attribute("value");
                 if(key == "intervalTime")
                     policy_param.interval_time = value;
+                if(key == "scanMode")
+                {
+                    policy_param.scan_mode = atoi(value.c_str());
+                }
                 if(key == "ipRange")
                 {
                     child_element = age_element->FirstChildElement();

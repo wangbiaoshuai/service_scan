@@ -197,7 +197,7 @@ int FastScan::StartSnmpTransmit()
 int FastScan::StartScan()
 {
     map<string, string> old_ip_range;
-    if(detect_host_.Init(2) != 1)
+    if(detect_host_.Init() != 1)
     {
         LOG_ERROR("StartScan: DetectInit failed");
         return -1;
@@ -238,7 +238,7 @@ int FastScan::StartScan()
                 LOG_WARN("StartScan: prase ip range is empty:" << it->first.c_str());
                 continue;
             }
-            if(detect_host_.Start(&range, area_id, it->second) != 0)
+            if(detect_host_.Start(&range, area_id, it->second, policy_param.scan_mode) != 0)
             {
                 LOG_ERROR("StartScan: DetectUnRegist failed.");
             }

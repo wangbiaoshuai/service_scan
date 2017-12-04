@@ -31,7 +31,7 @@ typedef struct
 }SendPackParam;
 
 DetectHost::DetectHost():
-detect_mode_(1),
+detect_mode_(0),
 //unregister_mutex_(),
 //register_mutex_(),
 nmap_dev_mutex_(),
@@ -74,10 +74,9 @@ void* dep_scan_function(void* context)
     pthread_exit(NULL);
 }
 
-int DetectHost::Init(int mode)
+int DetectHost::Init()
 {
     LOG_INFO("DetectInit: begin.");
-    detect_mode_ = mode;
 
     GetDataCenterIp();
     GetBlockIp();
@@ -178,18 +177,20 @@ void DetectHost::DetectChange()
     mapDev ().swap(roaming_dev_);
 }
 
-int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId)
+int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId, int mode)
 {
     area_id_ = szAreaId;
     org_id_ = szOrgId;
 
-    if(detect_mode_ == 2)
+    if(mode == 1)
     {
+        detect_mode_ = 1;
         dep_scan_pause_ = 0;
         LOG_INFO("Start: depth scan continue...");
     }
     else
     {
+        detect_mode_ = 0;
         dep_scan_pause_ = 1;
         LOG_INFO("Start: depth scan pause...");
     }
@@ -220,14 +221,15 @@ int DetectHost::DepthScan()
         nmap_dev_.pop_front();
         nmap_dev_mutex_.Unlock();
 
+        if(!device.szDevId.empty())
+        {
+            LOG_DEBUG("DepthScan: device("<<device.szIP.c_str()<<")---->"<<device.szDevId.c_str());
+            continue;
+        }
+
         int pid = fork();
         if(pid == 0)
         {
-            if(!device.szDevId.empty())
-            {
-                LOG_DEBUG("DepthScan: device("<<device.szIP.c_str()<<")---->"<<device.szDevId.c_str());
-                exit(0);
-            }
             devscan_result_s dev_info = {0};
             int res = devscan_identify(inet_addr(device.szIP.c_str()), &dev_info);
             if(res < 0)
@@ -419,7 +421,7 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
                 printf("send to block service fail\n");
                 LOG_ERROR("parseClientPack: send data to block service failed. data:"<<szText);
             }
-            if(detect_mode_ == 2)
+            if(detect_mode_ == 1)
             {
                 //nmap_dev_.insert(mapDev::value_type(uip, devinfo));
                 nmap_dev_mutex_.Lock();
@@ -579,7 +581,7 @@ bool DetectHost::RecvIcmpPack()
                     {
                         unregister_dev_keep_.insert(mapDev::value_type(uip, device));
                     }
-                    if(detect_mode_ == 2)
+                    if(detect_mode_ == 1)
                     {
                         //nmap_dev_.insert(mapDev::value_type(uip, device));
                         nmap_dev_mutex_.Lock();
@@ -720,7 +722,7 @@ void DetectHost::RecvNbtPack()
                     //如果上报成功，则将该设备定义为老的未注册设备。
                     unregister_dev_keep_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
                 }
-                if(detect_mode_ == 2)
+                if(detect_mode_ == 1)
                 {
                     //nmap_dev_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
                     nmap_dev_mutex_.Lock();
@@ -1206,7 +1208,7 @@ int DetectHost::CalculateCloseDev()
                 printf("send to block service fail\n");
 
             }
-            if(detect_mode_ == 2)
+            if(detect_mode_ == 1)
             {
                 //nmap_dev_.insert(*it);
                 nmap_dev_mutex_.Lock();
@@ -1258,7 +1260,7 @@ int DetectHost::CalculateCloseDev()
                 printf("send to block service fail\n");
 
             }
-            if(detect_mode_ == 2)
+            if(detect_mode_ == 1)
             {
                 //nmap_dev_.insert(*it);
                 nmap_dev_mutex_.Lock();
