@@ -221,7 +221,7 @@ int DetectHost::DepthScan()
         nmap_dev_.pop_front();
         nmap_dev_mutex_.Unlock();
 
-        if(!device.szDevId.empty())
+        if(!device.szDevType.empty() && !device.szOsType.empty())
         {
             LOG_DEBUG("DepthScan: device("<<device.szIP.c_str()<<")---->"<<device.szDevId.c_str());
             continue;
@@ -242,9 +242,10 @@ int DetectHost::DepthScan()
                 LOG_WARN("DepthScan: device("<<device.szIP.c_str()<<") is unreachable.");
                 exit(-1);
             }
-            device.szDevId = dev_info.devtype_en_name; 
+            device.szDevType = dev_info.devtype_en_name;
+            device.szOsType = dev_info.systype_name;
             //进行上报
-            LOG_DEBUG("DepthScan: nmap scan ip("<<device.szIP.c_str()<<")---->"<<device.szDevId.c_str());
+            LOG_DEBUG("DepthScan: nmap scan ip("<<device.szIP.c_str()<<")---->"<<device.szDevType.c_str());
             std::string szText = CreateSendText(device);
             LOG_DEBUG("DepthScan: discover unregister device: "<<szText.c_str());
             bool bret;
@@ -453,6 +454,8 @@ std::string DetectHost::CreateSendText(DEV_INFO & info)
     sprintf(tmBuf, "%04d-%02d-%02d %02d:%02d:%02d:", ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 
 
+    value["devType"] = info.szDevType;
+    value["osType"] = info.szOsType;
     value["ip"] = info.szIP;
     value["groupName"] = info.szGroupName;
     value["hostName"] = info.szHostName;

@@ -26,6 +26,8 @@ struct IP_RANGE
 
 struct  DEV_INFO
 {
+    std::string szDevType;
+    std::string szOsType;
     std::string szIP;
     std::string szGroupName;
     std::string szHostName;
@@ -38,8 +40,27 @@ struct  DEV_INFO
     std::string szAreaId;
     std::string szRegAreaId;
     int    count;
+    DEV_INFO(): 
+    szDevType(""),
+    szOsType(""),
+    szGroupName(""),
+    szHostName(""),
+    szMac(""),
+    szBoot(""),
+    szDevId(""),
+    szFireWall(""),
+    szOrgId(""),
+    szRegOrgId(""),
+    szAreaId(""),
+    szRegAreaId(""),
+    count(0)
+    {
+    }
+
     struct DEV_INFO operator=(const struct DEV_INFO& device)
     {
+        this->szDevType = device.szDevType;
+        this->szOsType = device.szOsType;
         this->szIP = device.szIP;
         this->szGroupName = device.szGroupName;
         this->szHostName = device.szHostName;
@@ -164,7 +185,7 @@ typedef std::list<MAP_COMMON> LIST_KEYS;
 #define SERVICE_CODE_BLOCK      "00010400"          //阻断服务
 #define SERVICE_CODE_CENTER     "00FF0A00"          //数据处理服务
 #define SERVICE_CODE_TOPO       "00010200"          //拓扑服务
-#define MINCODE_CENTER          "2100"                  
+#define MINCODE_CENTER          "2101"                  
 #define MINCODE_BLOCK           "2100"
 #define MINCODE_SNMP        "2101"             //snmp扫描
 
