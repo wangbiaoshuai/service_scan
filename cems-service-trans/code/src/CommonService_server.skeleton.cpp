@@ -19,6 +19,7 @@
 #include "parse_configure.h"
 #include "json/json.h"
 #include "CRC32.h"
+#include "parse_policy.h"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -29,8 +30,11 @@ using boost::shared_ptr;
 
 using namespace  ::com::vrv::cems::common::thrift::service;
 using namespace cems::service::scan;
+using namespace std;
 
-#define COMPRESS_MODE 1
+#define MAXCODE_TRANS_SERVICE "00FF1400"
+#define MINCODE_TRANS_POLICY "1000" 
+
 const char* log_file = "/tmp/cemstrans.stdout";
 
 class CommonServiceHandler : virtual public CommonServiceIf 
@@ -41,9 +45,7 @@ public:
         // Your initialization goes here
     }
 
-    void getDataTS(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const bool isEncrypt, const std::string& key, const int32_t flag)
-    {
-    }
+    void getDataTS(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const bool isEncrypt, const std::string& key, const int32_t flag);
 
     void getDataTC(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const std::string& sessionId, const int32_t msgCode) 
     {
@@ -55,7 +57,75 @@ public:
     std::string WriteResult(std::string maxCode, std::string minCode, std::string ret, std::string desc, std::string jdata);
     std::string EncryptResult(std::string szRet, bool isEncrypt, bool isZip, ST_ENCRYPT & encrypt, int mode);
     bool IsValidCrc(const std::string& szCrc, const std::string& szjdata);
+    bool IsPolicy(const std::string& maxCode, const std::string& minCode);
 };
+
+void CommonServiceHandler::getDataTS(std::string& _return, const std::string& maxCode, const std::string& minCode, const std::string& checkCode, const bool isZip, const std::string& data, const bool isEncrypt, const std::string& key, const int32_t flag)
+{
+    LOG_INFO("getDataTS: start.");
+    ST_ENCRYPT encrypt;
+    EncryptMode(flag, key, encrypt);
+    int mode = GetCompressMode();
+
+    //功能号校验
+    if(!IsPolicy(maxCode, minCode))
+    {
+        _return = WriteResult(maxCode, minCode,  "1",  "功能号调用错误。", "");
+        _return = EncryptResult(_return, isEncrypt, isZip, encrypt, mode);
+        LOG_ERROR("getDataTS: maxCode or minCode is error: maxCode="<<maxCode<<", minCode="<<minCode);
+        return;
+    }
+
+    //CRC校验
+    if(!IsValidCrc(checkCode, data))
+    {
+        _return = WriteResult(maxCode, minCode,  "1",  "CRC 校验失败。",
+                "");
+        _return = EncryptResult(_return, isEncrypt, isZip, encrypt, mode);
+        LOG_ERROR("getDataTS: check CRC failed.");
+        return;
+    }
+
+    CGenAlgori genrial;
+    string recv_data = data;
+    if(isEncrypt)
+    {
+        recv_data = genrial.DeCrypt(data, encrypt.mode, encrypt.szKey);
+    }
+
+    if(isZip)
+    {
+        recv_data = genrial.UnCompress(recv_data, mode);
+    }
+
+    if(IsPolicy(maxCode, minCode))
+    {
+        if(ParsePolicy::GetInstance().WritePolicy(recv_data) != -1)
+        {
+            LOG_INFO("getDataTS: update policy file success.");
+            _return = WriteResult(maxCode, minCode,  "0",  "功能调用成功。", "");
+            ParsePolicy::GetInstance().SetLogLevel();
+        }
+        else
+        {
+            LOG_ERROR("getDataTS: update policy file error.");
+            _return = WriteResult(maxCode, minCode,  "1",  "解析xml失败。", "");
+        }
+    }
+    
+    _return = EncryptResult(_return, isEncrypt, isZip, encrypt, mode);
+    LOG_INFO("getDataTS: end.");
+    return;
+}
+
+bool CommonServiceHandler::IsPolicy(const std::string& maxCode, const std::string& minCode)
+{
+    if(maxCode != MAXCODE_TRANS_SERVICE || minCode != MINCODE_TRANS_POLICY)
+    {
+        return false;
+    }
+    return true;
+}
 
 int CommonServiceHandler::GetCompressMode()
 {

@@ -15,16 +15,37 @@ namespace transfer
 	msgbody::msgbody(const char *data_ptr,unsigned int data_len)
 	:json_(data_ptr,data_len)
 	{
-		Json::Reader reader;  
+/*		Json::Reader reader;  
 		Json::Value root;  	
 		if (reader.parse(json_, root)) 
     	{  
-        	session_id = root["SessionID"].asString(); 
-        	src_device_id = root["SrcDeviceID"].asString(); 
-        	dst_device_id = root["DstDeviceID"].asString(); 
-        	device_type = root["DeviceType"].asString(); 
-    	}  
+        	session_id = root["SessionID"].empty()? "" : root["SessionID"].asString(); 
+        	src_device_id = root["SrcDeviceID"].empty()? "" : root["SrcDeviceID"].asString(); 
+        	dst_device_id = root["DstDeviceID"].empty()? "" : root["DstDeviceID"].asString(); 
+        	device_type = root["DeviceType"].empty()? "" : root["DeviceType"].asString(); 
+    	}  */
 	}
+
+    int msgbody::parse_body()
+    {
+		Json::Reader reader;  
+		Json::Value root;  	
+		if (reader.parse(json_, root)) 
+    	{
+            if(root.isMember("SessionID") && root.isMember("SrcDeviceID") && root.isMember("DstDeviceID") && root.isMember("DeviceType"))
+            {
+                if(root["SessionID"].isString() && root["SrcDeviceID"].isString() && root["DstDeviceID"].isString() && root["DeviceType"].isString())
+                {
+                    session_id = root["SessionID"].asString();
+                    src_device_id = root["SrcDeviceID"].asString();
+                    dst_device_id = root["DstDeviceID"].asString();
+                    device_type = root["DeviceType"].asString();
+                    return 0;
+                }
+            }
+        }
+        return -1;
+    }
 
 	string msgbody::get_sessionid()
 	{

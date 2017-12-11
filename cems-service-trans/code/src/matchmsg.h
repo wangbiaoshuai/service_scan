@@ -6,6 +6,7 @@
 #include <boost/lexical_cast.hpp>
 #include "common.h"
 #include "json/json.h"
+#include "json/value.h"
 
 using namespace std;
 
@@ -73,6 +74,7 @@ namespace transfer
 	{
 	public:
 		msgbody(const char *data_ptr,unsigned int data_len);
+        int parse_body();
 		string get_sessionid();
 		string get_srcdeviceid();
 		string get_dstdeviceid();

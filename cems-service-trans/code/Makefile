@@ -29,7 +29,7 @@ endif
 CXX = g++
 CXXFLAGS = -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT ${DEBUG}
 PROJECT = cemstrans
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o .build/start_trans.o .build/matchmsg.o .build/transferserver.o 
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o .build/start_trans.o .build/matchmsg.o .build/transferserver.o .build/parse_policy.o
 
 all: foremost ${PROJECT}
 
@@ -86,6 +86,9 @@ ${PROJECT}: ${OBJECTS}
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 	
 .build/transferserver.o: src/transferserver.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/parse_policy.o: src/parse_policy.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 

@@ -15,6 +15,7 @@
 #include "md5module.h"
 #include "parse_configure.h"
 #include "gen_algorithm.h"
+using namespace std;
 
 #define MAXBUFSIZE 1024 
 #define MAXINTERFACES 16

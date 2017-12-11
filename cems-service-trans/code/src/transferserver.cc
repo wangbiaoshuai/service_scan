@@ -370,6 +370,7 @@ namespace transfer
         {
           //LOG_I("%s has been deleted,stop transfering,return\n",dst_ip.c_str());
           LOG_INFO("handle_read: "<<dst_ip.c_str()<<" has been deleted, stop transfering, return.");
+          safe_delete(this, map_key_);
           return;
         }
         tcp::socket* dst_socketptr_ = g_matchinfo_map.at(dst_ip).socket_ptr;
@@ -767,7 +768,24 @@ namespace transfer
   {
     if (!error)
     {
+      if(body_ptr != NULL)
+      {
+          LOG_DEBUG("parse_matchmsg_body: message body["<<body_ptr<<"].");
+      }
+      else
+      {
+          LOG_ERROR("parse_matchmsg_body: message is NULL.");
+          safe_delete(this, map_key_);
+          return;
+      }
       msgbody msg_body(body_ptr,body_len);
+      if(msg_body.parse_body() < 0)
+      {
+          LOG_ERROR("parse_matchmsg_body: parse body error.");
+          delete[] body_ptr;
+          safe_delete(this,map_key_);
+          return;
+      }
       MATCH_INFO matchinfo = g_matchinfo_map.at(map_key_);
       matchinfo.ip = this->socket_.remote_endpoint().address().to_string();
       matchinfo.socket_ptr = &socket_;
@@ -789,12 +807,21 @@ namespace transfer
         // this->ismatched_checktimer_.cancel();
         safe_delete(this,map_key_);
       }
-      delete body_ptr;
+      if(body_ptr != NULL)
+      {
+          delete[] body_ptr;
+          body_ptr = NULL;
+      }
     }
     else
     {
       //LOG_E("[%0x] handle_write_body error: %s\n",this,error.message().c_str());
       LOG_ERROR("parse_matchmsg_body error: "<<error.message().c_str());
+      if(body_ptr != NULL)
+      {
+          delete[] body_ptr;
+          body_ptr = NULL;
+      }
       // this->ismatched_checktimer_.cancel();
       if(error.value() != boost::system::errc::operation_canceled)
         safe_delete(this,map_key_);
