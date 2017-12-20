@@ -382,7 +382,7 @@ void session::handle_read(const boost::system::error_code& error, size_t bytes_t
         string dst_ip = g_matchinfo_map[map_key_].dst_ip;
         if(!is_exist_in_map(dst_ip))
         {
-            LOG_INFO("handle_read: "<<dst_ip.c_str()<<" has been deleted, stop transfering, return.");
+            LOG_WARN("handle_read: "<<dst_ip.c_str()<<" has been deleted, stop transfering, return.");
             session_close();
             return;
         }
