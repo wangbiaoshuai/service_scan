@@ -7,13 +7,13 @@
 {"size":1581,"line":46,"word":117,"systype_id":5,"devtype_id":36,"desc":"Hikvision dvr"}
 {"size":50607,"line":48,"word":3338,"systype_id":5,"devtype_id":8,"desc":"Dahua camera"}
 {"size":63027,"line":2267,"word":4674,"systype_id":5,"devtype_id":20,"desc":"Dahua nvr"}
-{"size":3015,"line":99,"word":244,"systype_id":5,"devtype_id":30,"desc":"¶¯Á¦»·¾³¼à¿ØÖ÷»ú"}
-{"size":15945,"line":284,"word":950,"systype_id":5,"devtype_id":33,"desc":"MCU·şÎñÆ÷"}
-{"size":11314,"line":303,"word":1014,"systype_id":5,"devtype_id":31,"desc":"PolycomÖÕ¶Ë"}
-{"size":515,"line":17,"word":40,"systype_id":5,"devtype_id":7,"desc":"IPµç»°"}
-{"size":4304,"line":20,"word":151,"systype_id":7,"devtype_id":7,"desc":"IPµç»°"}
-{"size":9479,"line":293,"word":488,"systype_id":5,"devtype_id":34,"desc":"ÊÓÆµ»áÒéÂ¼²¥·şÎñÆ÷"}
-{"size":3502,"line":87,"word":171,"systype_id":14,"devtype_id":40,"desc":"VMware vSphereĞéÄâ»¯Æ½Ì¨"}
-{"size":5194,"line":123,"word":280,"systype_id":14,"devtype_id":41,"desc":"VMware ESXiĞéÄâ»¯Æ½Ì¨"}
-{"size":110,"line":1,"word":4,"systype_id":5,"devtype_id":6,"desc":"ÍøÂç´òÓ¡»ú"}
-{"size":13433,"line":421,"word":702,"systype_id":5,"devtype_id":6,"desc":"ÍøÂç´òÓ¡»ú"}
+{"size":3015,"line":99,"word":244,"systype_id":5,"devtype_id":30,"desc":"åŠ¨åŠ›ç¯å¢ƒç›‘æ§ä¸»æœº"}
+{"size":15945,"line":284,"word":950,"systype_id":5,"devtype_id":33,"desc":"MCUæœåŠ¡å™¨"}
+{"size":11314,"line":303,"word":1014,"systype_id":5,"devtype_id":31,"desc":"Polycomç»ˆç«¯"}
+{"size":515,"line":17,"word":40,"systype_id":5,"devtype_id":7,"desc":"IPç”µè¯"}
+{"size":4304,"line":20,"word":151,"systype_id":7,"devtype_id":7,"desc":"IPç”µè¯"}
+{"size":9479,"line":293,"word":488,"systype_id":5,"devtype_id":34,"desc":"è§†é¢‘ä¼šè®®å½•æ’­æœåŠ¡å™¨"}
+{"size":3502,"line":87,"word":171,"systype_id":14,"devtype_id":40,"desc":"VMware vSphereè™šæ‹ŸåŒ–å¹³å°"}
+{"size":5194,"line":123,"word":280,"systype_id":14,"devtype_id":41,"desc":"VMware ESXiè™šæ‹ŸåŒ–å¹³å°"}
+{"size":110,"line":1,"word":4,"systype_id":5,"devtype_id":6,"desc":"ç½‘ç»œæ‰“å°æœº"}
+{"size":13433,"line":421,"word":702,"systype_id":5,"devtype_id":6,"desc":"ç½‘ç»œæ‰“å°æœº"}
