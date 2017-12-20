@@ -1,0 +1,42 @@
+{"name":"unknow_dev","en_name":"unknow dev","cn_name":"未知终端","class_id":0,"en_class_name":"unknow dev","cn_class_name":"未知终端"}
+{"name":"all_dev","en_name":"all dev","cn_name":"所有终端","class_id":1,"en_class_name":"all dev","cn_class_name":"所有终端"}
+{"name":"pc","en_name":"personal computer","cn_name":"个人电脑","class_id":2,"en_class_name":"user dev","cn_class_name":"用户设备"}
+{"name":"Thin Clients","en_name":"thin clients","cn_name":"瘦客户端","class_id":2,"en_class_name":"user dev","cn_class_name":"用户设备"}
+{"name":"vmware","en_name":"vmware","cn_name":"虚拟机","class_id":2,"en_class_name":"user dev","cn_class_name":"用户设备"}
+{"name":"mobile","en_name":"mobile","cn_name":"移动终端","class_id":2,"en_class_name":"user dev","cn_class_name":"用户设备"}
+{"name":"printer","en_name":"printer","cn_name":"网络打印机","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"VoIP phone","en_name":"VoIP phone","cn_name":"IP电话","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"webcam","en_name":"webcam","cn_name":"网络摄像头","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"pos","en_name":"pos","cn_name":"POS终端","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"switch","en_name":"switch","cn_name":"交换机","class_id":4,"en_class_name":"net dev","cn_class_name":"网络设备"}
+{"name":"router","en_name":"router","cn_name":"路由器","class_id":4,"en_class_name":"net dev","cn_class_name":"网络设备"}
+{"name":"wireless router","en_name":"wireless router","cn_name":"无线路由器","class_id":4,"en_class_name":"net dev","cn_class_name":"网络设备"}
+{"name":"WAP","en_name":"Wireless AP","cn_name":"无线AP","class_id":4,"en_class_name":"net dev","cn_class_name":"网络设备"}
+{"name":"netdev","en_name":"net dev","cn_name":"网络设备","class_id":4,"en_class_name":"net dev","cn_class_name":"网络设备"}
+{"name":"AD server","en_name":"AD server","cn_name":"AD域服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"LDAP server","en_name":"LDAP server","cn_name":"LDAP服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"Windows server","en_name":"Windows server","cn_name":"Windows服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"Linux server","en_name":"Linux server","cn_name":"Linux服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"video storage server","en_name":"video storage server","cn_name":"视频存储服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"NVR","en_name":"video storage server","cn_name":"网络硬盘录像机","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"console server","en_name":"console server","cn_name":"串口服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"fax_machine","en_name":"fax machine","cn_name":"传真机","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"scanner","en_name":"scanner","cn_name":"扫描仪","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"attendance_machine","en_name":"attendance machine","cn_name":"考勤机","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"entrance_guard","en_name":"entrance guard","cn_name":"门禁","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"sspi_terminal","en_name":"sspi terminal","cn_name":"自助缴费查询终端","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"ups","en_name":"UPS","cn_name":"UPS主机","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"cas_system","en_name":"CAC system","cn_name":"CAC在线监测装置系统","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"time_attendance","en_name":"time attendance","cn_name":"考勤系统","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"pem_host","en_name":"Power environment monitoring host","cn_name":"动力环境监控主机","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"polycom","en_name":"Polycom Terminal","cn_name":"Polycom终端","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"ivc_terminal","en_name":"Integrated video conference terminal","cn_name":"一体化视频会议终端","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"mcu_server","en_name":"MCU server","cn_name":"MCU服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"vcv_server","en_name":"Video conferencing video server","cn_name":"视频会议录播服务器","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"video_monitoring_platform","en_name":"video monitoring platform","cn_name":"视频监控平台","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"DVR","en_name":"video monitoring platform","cn_name":"数字硬盘录像机","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"dnbzzg_system","en_name":"dnbzzg_system","cn_name":"电能表计量周转柜系统","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"cloud_terminal","en_name":"cloud terminal","cn_name":"云终端","class_id":5,"en_class_name":"dumb terminal","cn_class_name":"哑终端"}
+{"name":"nas_system","en_name":"NAS system","cn_name":"NAS系统","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"vmware_vsphere","en_name":"VMware vSphere","cn_name":"VMware vSphere虚拟化平台","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}
+{"name":"vmware_esxi","en_name":"VMware ESXi","cn_name":"VMware ESXi虚拟化平台","class_id":5,"en_class_name":"server","cn_class_name":"服务器"}

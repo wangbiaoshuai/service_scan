@@ -1,0 +1,68 @@
+unknow:unknow
+all:all
+Windows:Windows
+Windows Mobile:Windows Mobile
+Windows Server:Windows Server
+Linux:Linux
+Android:Android
+Cisco IOS:Cisco IOS
+Apple iOS:Apple iOS
+Mac OS X:Mac OS X
+VxWorks:VxWorks
+Windows 2000:Windows
+Windows 2003:Windows
+Windows XP:Windows
+Windows Vista:Windows
+Windows 7:Windows
+Windows 8:Windows
+Windows 2008:Windows
+Windows 10:Windows
+Windows 7|8:Windows
+Windows 7|2008|8.1:Windows
+Windows 7|2008:Windows
+Windows 2012:Windows Server
+Windows Mobile 5.X:Windows Mobile
+Windows Mobile 6.X:Windows Mobile
+Linux 2.0.X:Linux
+Linux 2.1.X:Linux
+Linux 2.2.X:Linux
+Linux 2.4.X:Linux
+Linux 2.6.X:Linux
+Linux 3.X:Linux
+Linux 4.X:Linux
+Linux 2.6.X|3.X:Linux
+Cisco IOS 10.X:Cisco IOS
+Cisco IOS 11.X:Cisco IOS
+Cisco IOS 12.X:Cisco IOS
+Cisco IOS 15.X:Cisco IOS
+Android 1.X:Android
+Android 2.X:Android
+Android 3.X:Android
+Android 4.X:Android
+Android 5.X:Android
+Android 4.0.X:Android
+Android 4.1.X:Android
+Android 4.2.X:Android
+Android 4.3.X:Android
+Android 4.4.X:Android
+iOS 3.X:iOS
+iOS 4.X:iOS
+iOS 5.X:iOS
+iOS 6.X:iOS
+iOS 7.X:iOS
+iOS 8.X:iOS
+iOS 9.X:iOS
+Mac OS X 10.1.X:Mac OS X
+Mac OS X 10.2.X:Mac OS X
+Mac OS X 10.3.X:Mac OS X
+Mac OS X 10.4.X:Mac OS X
+Mac OS X 10.5.X:Mac OS X
+Mac OS X 10.6.X:Mac OS X
+Mac OS X 10.7.X:Mac OS X
+Mac OS X 10.8.X:Mac OS X
+Mac OS X 10.9.X:Mac OS X
+Mac OS X 10.10.X:Mac OS X
+Mac OS X 10.11.X:Mac OS X
+VxWorks 5.X:VxWorks
+VxWorks 6.X:VxWorks
+VxWorks 12.X:VxWorks

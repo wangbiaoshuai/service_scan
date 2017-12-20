@@ -2,10 +2,12 @@
 <root>
     <thriftBean selectorThreads="2" workerThreads="400"/>
     <logBean logLevel="DEBUG" logPath="../logs/Sys.log" />
-    <params><paramBean key="intervalTime" value="60"/>
+    <params>
+        <paramBean key="intervalTime" value="60"/>
+        <paramBean key="scanMode" value="1"/>
         <paramBean key="ipRange" value="ipRange">
-            <param><ip>192.168.133.1-192.168.133.255</ip>
-                <orgId>org</orgId>
+            <param><ip></ip>
+                <orgId></orgId>
             </param>
         </paramBean>
     </params>

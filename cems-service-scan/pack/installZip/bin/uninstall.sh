@@ -34,6 +34,7 @@ if [ $input == y ] ; then
 	chkconfig --del $serviceName
     rm -rf /etc/init.d/$serviceName
     rm -rf "/usr/local/service/$serviceName"
+    rm -rf "/usr/local/devscan"
     echo "$serviceName 卸载成功"
 
 else

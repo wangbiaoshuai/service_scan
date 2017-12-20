@@ -44,6 +44,10 @@ rm -rf /etc/init.d/CEMS-SERVICE-SCAN
 
 ln -s /usr/local/service/CEMS-SERVICE-SCAN/bin/CEMS-SERVICE-SCAN  /etc/init.d/CEMS-SERVICE-SCAN
 
+rm -rf /usr/local/devscan 2>/dev/null
+
+cp -r ../devscan /usr/local/
+
 chmod 755 /etc/init.d/CEMS-SERVICE-SCAN
 
 #all user rw

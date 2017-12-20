@@ -1,0 +1,16 @@
+{"systype_id":0,"systype_name":"unknow"}
+{"systype_id":1,"systype_name":"all"}
+{"systype_id":2,"systype_name":"Windows"}
+{"systype_id":3,"systype_name":"Windows Mobile"}
+{"systype_id":4,"systype_name":"Windows Server"}
+{"systype_id":5,"systype_name":"Linux"}
+{"systype_id":6,"systype_name":"Android"}
+{"systype_id":7,"systype_name":"Cisco IOS"}
+{"systype_id":8,"systype_name":"Apple iOS"}
+{"systype_id":9,"systype_name":"Mac OS X"}
+{"systype_id":10,"systype_name":"VxWorks"}
+{"systype_id":11,"systype_name":"embedded"}
+{"systype_id":12,"systype_name":"Huawei VRP"}
+{"systype_id":13,"systype_name":"H3C Comware"}
+{"systype_id":14,"systype_name":"VMware ESXi"}
+{"systype_id":15,"systype_name":"FreeBSD"}

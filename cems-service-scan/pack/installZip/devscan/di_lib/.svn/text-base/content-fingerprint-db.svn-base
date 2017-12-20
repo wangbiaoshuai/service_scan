@@ -1,0 +1,19 @@
+{"size":1862,"line":56,"word":155,"systype_id":5,"devtype_id":8,"desc":"Hikvision camera"}
+{"size":2504,"line":51,"word":152,"systype_id":5,"devtype_id":8,"desc":"Hikvision camera"}
+{"size":1658,"line":53,"word":140,"systype_id":5,"devtype_id":8,"desc":"Hikvision camera"}
+{"size":1862,"line":56,"word":155,"systype_id":5,"devtype_id":8,"desc":"Hikvision camera"}
+{"size":481,"line":15,"word":39,"systype_id":5,"devtype_id":8,"desc":"Hikvision camera"}
+{"size":23538,"line":380,"word":1027,"systype_id":5,"devtype_id":20,"desc":"Hikvision nvr"}
+{"size":1581,"line":46,"word":117,"systype_id":5,"devtype_id":36,"desc":"Hikvision dvr"}
+{"size":50607,"line":48,"word":3338,"systype_id":5,"devtype_id":8,"desc":"Dahua camera"}
+{"size":63027,"line":2267,"word":4674,"systype_id":5,"devtype_id":20,"desc":"Dahua nvr"}
+{"size":3015,"line":99,"word":244,"systype_id":5,"devtype_id":30,"desc":"动力环境监控主机"}
+{"size":15945,"line":284,"word":950,"systype_id":5,"devtype_id":33,"desc":"MCU服务器"}
+{"size":11314,"line":303,"word":1014,"systype_id":5,"devtype_id":31,"desc":"Polycom终端"}
+{"size":515,"line":17,"word":40,"systype_id":5,"devtype_id":7,"desc":"IP电话"}
+{"size":4304,"line":20,"word":151,"systype_id":7,"devtype_id":7,"desc":"IP电话"}
+{"size":9479,"line":293,"word":488,"systype_id":5,"devtype_id":34,"desc":"视频会议录播服务器"}
+{"size":3502,"line":87,"word":171,"systype_id":14,"devtype_id":40,"desc":"VMware vSphere虚拟化平台"}
+{"size":5194,"line":123,"word":280,"systype_id":14,"devtype_id":41,"desc":"VMware ESXi虚拟化平台"}
+{"size":110,"line":1,"word":4,"systype_id":5,"devtype_id":6,"desc":"网络打印机"}
+{"size":13433,"line":421,"word":702,"systype_id":5,"devtype_id":6,"desc":"网络打印机"}
