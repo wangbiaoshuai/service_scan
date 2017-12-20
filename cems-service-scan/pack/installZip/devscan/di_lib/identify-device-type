@@ -1,42 +1,42 @@
-{"name":"unknow_dev","en_name":"unknow dev","cn_name":"Î´ÖªÖÕ¶Ë","class_id":0,"en_class_name":"unknow dev","cn_class_name":"Î´ÖªÖÕ¶Ë"}
-{"name":"all_dev","en_name":"all dev","cn_name":"ËùÓĞÖÕ¶Ë","class_id":1,"en_class_name":"all dev","cn_class_name":"ËùÓĞÖÕ¶Ë"}
-{"name":"pc","en_name":"personal computer","cn_name":"¸öÈËµçÄÔ","class_id":2,"en_class_name":"user dev","cn_class_name":"ÓÃ»§Éè±¸"}
-{"name":"Thin Clients","en_name":"thin clients","cn_name":"Êİ¿Í»§¶Ë","class_id":2,"en_class_name":"user dev","cn_class_name":"ÓÃ»§Éè±¸"}
-{"name":"vmware","en_name":"vmware","cn_name":"ĞéÄâ»ú","class_id":2,"en_class_name":"user dev","cn_class_name":"ÓÃ»§Éè±¸"}
-{"name":"mobile","en_name":"mobile","cn_name":"ÒÆ¶¯ÖÕ¶Ë","class_id":2,"en_class_name":"user dev","cn_class_name":"ÓÃ»§Éè±¸"}
-{"name":"printer","en_name":"printer","cn_name":"ÍøÂç´òÓ¡»ú","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"VoIP phone","en_name":"VoIP phone","cn_name":"IPµç»°","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"webcam","en_name":"webcam","cn_name":"ÍøÂçÉãÏñÍ·","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"pos","en_name":"pos","cn_name":"POSÖÕ¶Ë","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"switch","en_name":"switch","cn_name":"½»»»»ú","class_id":4,"en_class_name":"net dev","cn_class_name":"ÍøÂçÉè±¸"}
-{"name":"router","en_name":"router","cn_name":"Â·ÓÉÆ÷","class_id":4,"en_class_name":"net dev","cn_class_name":"ÍøÂçÉè±¸"}
-{"name":"wireless router","en_name":"wireless router","cn_name":"ÎŞÏßÂ·ÓÉÆ÷","class_id":4,"en_class_name":"net dev","cn_class_name":"ÍøÂçÉè±¸"}
-{"name":"WAP","en_name":"Wireless AP","cn_name":"ÎŞÏßAP","class_id":4,"en_class_name":"net dev","cn_class_name":"ÍøÂçÉè±¸"}
-{"name":"netdev","en_name":"net dev","cn_name":"ÍøÂçÉè±¸","class_id":4,"en_class_name":"net dev","cn_class_name":"ÍøÂçÉè±¸"}
-{"name":"AD server","en_name":"AD server","cn_name":"ADÓò·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"LDAP server","en_name":"LDAP server","cn_name":"LDAP·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"Windows server","en_name":"Windows server","cn_name":"Windows·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"Linux server","en_name":"Linux server","cn_name":"Linux·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"video storage server","en_name":"video storage server","cn_name":"ÊÓÆµ´æ´¢·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"NVR","en_name":"video storage server","cn_name":"ÍøÂçÓ²ÅÌÂ¼Ïñ»ú","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"console server","en_name":"console server","cn_name":"´®¿Ú·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"fax_machine","en_name":"fax machine","cn_name":"´«Õæ»ú","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"scanner","en_name":"scanner","cn_name":"É¨ÃèÒÇ","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"attendance_machine","en_name":"attendance machine","cn_name":"¿¼ÇÚ»ú","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"entrance_guard","en_name":"entrance guard","cn_name":"ÃÅ½û","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"sspi_terminal","en_name":"sspi terminal","cn_name":"×ÔÖú½É·Ñ²éÑ¯ÖÕ¶Ë","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"ups","en_name":"UPS","cn_name":"UPSÖ÷»ú","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"cas_system","en_name":"CAC system","cn_name":"CACÔÚÏß¼à²â×°ÖÃÏµÍ³","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"time_attendance","en_name":"time attendance","cn_name":"¿¼ÇÚÏµÍ³","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"pem_host","en_name":"Power environment monitoring host","cn_name":"¶¯Á¦»·¾³¼à¿ØÖ÷»ú","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"polycom","en_name":"Polycom Terminal","cn_name":"PolycomÖÕ¶Ë","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"ivc_terminal","en_name":"Integrated video conference terminal","cn_name":"Ò»Ìå»¯ÊÓÆµ»áÒéÖÕ¶Ë","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"mcu_server","en_name":"MCU server","cn_name":"MCU·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"vcv_server","en_name":"Video conferencing video server","cn_name":"ÊÓÆµ»áÒéÂ¼²¥·şÎñÆ÷","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"video_monitoring_platform","en_name":"video monitoring platform","cn_name":"ÊÓÆµ¼à¿ØÆ½Ì¨","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"DVR","en_name":"DVR","cn_name":"Êı×ÖÓ²ÅÌÂ¼Ïñ»ú","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"dnbzzg_system","en_name":"dnbzzg_system","cn_name":"µçÄÜ±í¼ÆÁ¿ÖÜ×ª¹ñÏµÍ³","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"cloud_terminal","en_name":"cloud terminal","cn_name":"ÔÆÖÕ¶Ë","class_id":5,"en_class_name":"dumb terminal","cn_class_name":"ÑÆÖÕ¶Ë"}
-{"name":"nas_system","en_name":"NAS system","cn_name":"NASÏµÍ³","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"vmware_vsphere","en_name":"VMware vSphere","cn_name":"VMware vSphereĞéÄâ»¯Æ½Ì¨","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
-{"name":"vmware_esxi","en_name":"VMware ESXi","cn_name":"VMware ESXiĞéÄâ»¯Æ½Ì¨","class_id":5,"en_class_name":"server","cn_class_name":"·şÎñÆ÷"}
+{"name":"unknow_dev","en_name":"unknow dev","cn_name":"æœªçŸ¥ç»ˆç«¯","class_id":0,"en_class_name":"unknow dev","cn_class_name":"æœªçŸ¥ç»ˆç«¯"}
+{"name":"all_dev","en_name":"all dev","cn_name":"æ‰€æœ‰ç»ˆç«¯","class_id":1,"en_class_name":"all dev","cn_class_name":"æ‰€æœ‰ç»ˆç«¯"}
+{"name":"pc","en_name":"personal computer","cn_name":"ä¸ªäººç”µè„‘","class_id":2,"en_class_name":"user dev","cn_class_name":"ç”¨æˆ·è®¾å¤‡"}
+{"name":"Thin Clients","en_name":"thin clients","cn_name":"ç˜¦å®¢æˆ·ç«¯","class_id":2,"en_class_name":"user dev","cn_class_name":"ç”¨æˆ·è®¾å¤‡"}
+{"name":"vmware","en_name":"vmware","cn_name":"è™šæ‹Ÿæœº","class_id":2,"en_class_name":"user dev","cn_class_name":"ç”¨æˆ·è®¾å¤‡"}
+{"name":"mobile","en_name":"mobile","cn_name":"ç§»åŠ¨ç»ˆç«¯","class_id":2,"en_class_name":"user dev","cn_class_name":"ç”¨æˆ·è®¾å¤‡"}
+{"name":"printer","en_name":"printer","cn_name":"ç½‘ç»œæ‰“å°æœº","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"VoIP phone","en_name":"VoIP phone","cn_name":"IPç”µè¯","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"webcam","en_name":"webcam","cn_name":"ç½‘ç»œæ‘„åƒå¤´","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"pos","en_name":"pos","cn_name":"POSç»ˆç«¯","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"switch","en_name":"switch","cn_name":"äº¤æ¢æœº","class_id":4,"en_class_name":"net dev","cn_class_name":"ç½‘ç»œè®¾å¤‡"}
+{"name":"router","en_name":"router","cn_name":"è·¯ç”±å™¨","class_id":4,"en_class_name":"net dev","cn_class_name":"ç½‘ç»œè®¾å¤‡"}
+{"name":"wireless router","en_name":"wireless router","cn_name":"æ— çº¿è·¯ç”±å™¨","class_id":4,"en_class_name":"net dev","cn_class_name":"ç½‘ç»œè®¾å¤‡"}
+{"name":"WAP","en_name":"Wireless AP","cn_name":"æ— çº¿AP","class_id":4,"en_class_name":"net dev","cn_class_name":"ç½‘ç»œè®¾å¤‡"}
+{"name":"netdev","en_name":"net dev","cn_name":"ç½‘ç»œè®¾å¤‡","class_id":4,"en_class_name":"net dev","cn_class_name":"ç½‘ç»œè®¾å¤‡"}
+{"name":"AD server","en_name":"AD server","cn_name":"ADåŸŸæœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"LDAP server","en_name":"LDAP server","cn_name":"LDAPæœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"Windows server","en_name":"Windows server","cn_name":"WindowsæœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"Linux server","en_name":"Linux server","cn_name":"LinuxæœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"video storage server","en_name":"video storage server","cn_name":"è§†é¢‘å­˜å‚¨æœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"NVR","en_name":"video storage server","cn_name":"ç½‘ç»œç¡¬ç›˜å½•åƒæœº","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"console server","en_name":"console server","cn_name":"ä¸²å£æœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"fax_machine","en_name":"fax machine","cn_name":"ä¼ çœŸæœº","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"scanner","en_name":"scanner","cn_name":"æ‰«æä»ª","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"attendance_machine","en_name":"attendance machine","cn_name":"è€ƒå‹¤æœº","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"entrance_guard","en_name":"entrance guard","cn_name":"é—¨ç¦","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"sspi_terminal","en_name":"sspi terminal","cn_name":"è‡ªåŠ©ç¼´è´¹æŸ¥è¯¢ç»ˆç«¯","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"ups","en_name":"UPS","cn_name":"UPSä¸»æœº","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"cas_system","en_name":"CAC system","cn_name":"CACåœ¨çº¿ç›‘æµ‹è£…ç½®ç³»ç»Ÿ","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"time_attendance","en_name":"time attendance","cn_name":"è€ƒå‹¤ç³»ç»Ÿ","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"pem_host","en_name":"Power environment monitoring host","cn_name":"åŠ¨åŠ›ç¯å¢ƒç›‘æ§ä¸»æœº","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"polycom","en_name":"Polycom Terminal","cn_name":"Polycomç»ˆç«¯","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"ivc_terminal","en_name":"Integrated video conference terminal","cn_name":"ä¸€ä½“åŒ–è§†é¢‘ä¼šè®®ç»ˆç«¯","class_id":3,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"mcu_server","en_name":"MCU server","cn_name":"MCUæœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"vcv_server","en_name":"Video conferencing video server","cn_name":"è§†é¢‘ä¼šè®®å½•æ’­æœåŠ¡å™¨","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"video_monitoring_platform","en_name":"video monitoring platform","cn_name":"è§†é¢‘ç›‘æ§å¹³å°","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"DVR","en_name":"DVR","cn_name":"æ•°å­—ç¡¬ç›˜å½•åƒæœº","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"dnbzzg_system","en_name":"dnbzzg_system","cn_name":"ç”µèƒ½è¡¨è®¡é‡å‘¨è½¬æŸœç³»ç»Ÿ","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"cloud_terminal","en_name":"cloud terminal","cn_name":"äº‘ç»ˆç«¯","class_id":5,"en_class_name":"dumb terminal","cn_class_name":"å“‘ç»ˆç«¯"}
+{"name":"nas_system","en_name":"NAS system","cn_name":"NASç³»ç»Ÿ","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"vmware_vsphere","en_name":"VMware vSphere","cn_name":"VMware vSphereè™šæ‹ŸåŒ–å¹³å°","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
+{"name":"vmware_esxi","en_name":"VMware ESXi","cn_name":"VMware ESXiè™šæ‹ŸåŒ–å¹³å°","class_id":5,"en_class_name":"server","cn_class_name":"æœåŠ¡å™¨"}
