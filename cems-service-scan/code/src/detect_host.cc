@@ -242,7 +242,7 @@ int DetectHost::DepthScan()
                 LOG_WARN("DepthScan: device("<<device.szIP.c_str()<<") is unreachable.");
                 exit(-1);
             }
-            device.szDevType = dev_info.devtype_en_name;
+            device.szDevType = dev_info.devtype_cn_name;
             device.szOsType = dev_info.systype_name;
             //进行上报
             LOG_DEBUG("DepthScan: nmap scan ip("<<device.szIP.c_str()<<")---->"<<device.szDevType.c_str());
