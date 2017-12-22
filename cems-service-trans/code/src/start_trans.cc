@@ -44,14 +44,26 @@ pthread_t trans_thread;
 
 void* thread_function(void* context)
 {
-    LOG_INFO("transfer thread start.");
-    boost::asio::io_service io_service;
+    try
+    {
+        LOG_INFO("transfer thread start.");
+        boost::asio::io_service io_service;
 
-    using namespace std; // For atoi.
-    transfer::server mousekey_server(io_service, MOUSE_PORT);
-    transfer::server screen_server(io_service, SCREEN_PORT);
+        using namespace std; // For atoi.
+        transfer::server mousekey_server(io_service, MOUSE_PORT);
+        transfer::server screen_server(io_service, SCREEN_PORT);
 
-    io_service.run();
+        io_service.run();
+    }
+    catch(std::exception& e)
+    {
+        LOG_ERROR("thread_function: catch exception("<<e.what()<<").");
+    }
+    catch(...)
+    {
+        LOG_ERROR("thread_function: catch an exception.");
+    }
+    LOG_INFO("transfer thread end.");
     pthread_exit(NULL);
 }
 
