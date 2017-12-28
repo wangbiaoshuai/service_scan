@@ -7,7 +7,7 @@
 #include <boost/asio.hpp>
 #include <string>
 #include <map>
-#include <list>
+#include <vector>
 #include "common.h"
 #include "matchmsg.h"
 #include <boost/shared_ptr.hpp>
@@ -102,9 +102,11 @@ private:
     enum { max_length = 1024 };
     char data_[max_length];
     string response_str_;
-    bool session_closed_;
     boost::asio::deadline_timer ismatched_checktimer_;
     boost::asio::deadline_timer session_checktimer_;
+
+public:
+    bool session_closed_;
 };
 
 class server
@@ -116,10 +118,12 @@ private:
     void start_accept();
     void handle_accept(session* new_session,
                        const boost::system::error_code& error);
+    void clear_session();
 
 private:
     boost::asio::io_service& io_service_;
     tcp::acceptor acceptor_;
+    vector<session*> session_vec_;
 };
 }
 

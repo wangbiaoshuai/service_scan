@@ -70,15 +70,15 @@ map_key_(""),
 socket_(io_service),
 is_reduplicate_(false),
 response_str_(""),
-session_closed_(false),
 ismatched_checktimer_(io_service,boost::posix_time::seconds(TIMEOUT_S1)),
-session_checktimer_(io_service,boost::posix_time::seconds(TIMEOUT_S2))
+session_checktimer_(io_service,boost::posix_time::seconds(TIMEOUT_S2)),
+session_closed_(false)
 {
 }
 
 void session::session_close()
 {
-    LOG_DEBUG("session_close: begin close session "<<map_key_);
+    //LOG_DEBUG("session_close: begin close session "<<map_key_);
     if(!session_closed_)
     {
         delete_matchinfo();
@@ -96,6 +96,7 @@ void session::session_close()
 session::~session()
 {
     session_close();
+    LOG_DEBUG("session: "<<map_key_<<" is destroyed.");
 }
 /*******************************************************************************
  * Function Name: handle_check_ismatched
@@ -131,7 +132,7 @@ void session::handle_check_ismatched(const boost::system::error_code& error)
  *******************************************************************************/
 void session::handle_check_session(const boost::system::error_code& error)
 {
-    LOG_DEBUG("handle_check_session: "<<map_key_<<" begin...");
+    //LOG_DEBUG("handle_check_session: "<<map_key_<<" begin...");
     if (!error)
     {
         if(is_exist_in_map(map_key_))
@@ -843,39 +844,56 @@ void session::parse_matchmsg_body(char* body_ptr,int body_len,const boost::syste
     }
 }
 
-  server::server(boost::asio::io_service& io_service, short port)
-    : io_service_(io_service)
-    ,acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
-  {
+server::server(boost::asio::io_service& io_service, short port): 
+io_service_(io_service),
+acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+{
     //LOG_I("listening %d\n",port);
     LOG_INFO("listening "<<port);
     start_accept();
-  }
+}
 
-  void server::start_accept()
-  {
+void server::start_accept()
+{
     session* new_session = new session(io_service_);
+    session_vec_.push_back(new_session);
     acceptor_.async_accept(new_session->socket(),
         boost::bind(&server::handle_accept, this, new_session,
           boost::asio::placeholders::error));
-  }
+}
 
-  void server::handle_accept(session* new_session,
-      const boost::system::error_code& error)
-  {
+void server::handle_accept(session* new_session, const boost::system::error_code& error)
+{
     if (!error)
     {
-      //LOG_I("[%0x] accepted a new session\n",new_session);
-      LOG_INFO("handle_accept: accepted a new Session.");
-      new_session->start();
+        //LOG_I("[%0x] accepted a new session\n",new_session);
+        LOG_INFO("handle_accept: accepted a new Session.");
+        new_session->start();
     }
     else
     {
-      //LOG_E("handle_accept error,delete this session\n");
-      LOG_ERROR("handle_accept error, delete this session.");
-      delete new_session;
+        //LOG_E("handle_accept error,delete this session\n");
+        LOG_ERROR("handle_accept error, delete this session.");
+        delete new_session;
     }
 
+    clear_session();
     start_accept();
-  }
+}
+
+void server::clear_session()
+{
+    vector<session*>::iterator it = session_vec_.begin();
+    while(it != session_vec_.end())
+    {
+       if((*it)->session_closed_)
+        {
+            delete *it;
+            *it = NULL;
+            session_vec_.erase(it);
+            continue;
+        }
+        ++it;
+    }
+}
 }

@@ -48,6 +48,7 @@ void* thread_function(void* context)
     {
         LOG_INFO("transfer thread start.");
         boost::asio::io_service io_service;
+        boost::asio::io_service::work work(io_service);
 
         using namespace std; // For atoi.
         transfer::server mousekey_server(io_service, MOUSE_PORT);
