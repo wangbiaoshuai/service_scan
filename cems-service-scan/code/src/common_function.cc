@@ -343,7 +343,7 @@ std::string GetIps(vector<string> & mip)
     return szIp;
 }
 
-int   EncryptMode(int flag, std::string szKey, ST_ENCRYPT& encrypt)
+int EncryptMode(int flag, std::string szKey, ST_ENCRYPT& encrypt)
 {
     if(flag < 7)
     {
