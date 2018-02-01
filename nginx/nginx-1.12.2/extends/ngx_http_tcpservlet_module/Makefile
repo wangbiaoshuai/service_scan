@@ -5,23 +5,22 @@ CFLAGS =  -pipe  -O -W -Wall -Wpointer-arith -Wno-unused-parameter -Werror -g
 CPP =	cc -E
 LINK =	$(CXX)
 
-MY_INCLUDE = -I./extends/ngx_http_hello_module/input/configService/src \
-			 -I./extends/ngx_http_hello_module/input/vrvService/src \
-			 -I./extends/ngx_http_hello_module/input/commonService/src \
-			 -I./extends/ngx_http_hello_module/input/cacheService/src \
-			 -I./extends/ngx_http_hello_module/thrift-0.9.1/include \
-			 -I./extends/ngx_http_hello_module/thrift-0.9.1/include/thrift \
-			 -I./extends/ngx_http_hello_module/jsoncpp/include
+MY_INCLUDE = -I./extends/ngx_http_tcpservlet_module/input/configService/src \
+			 -I./extends/ngx_http_tcpservlet_module/input/vrvService/src \
+			 -I./extends/ngx_http_tcpservlet_module/input/commonService/src \
+			 -I./extends/ngx_http_tcpservlet_module/input/cacheService/src \
+			 -I./extends/ngx_http_tcpservlet_module/thrift-0.9.1/include \
+			 -I./extends/ngx_http_tcpservlet_module/thrift-0.9.1/include/thrift \
+			 -I./extends/ngx_http_tcpservlet_module/jsoncpp/include
 
-MY_LIBS = -L./extends/ngx_http_hello_module/input/configService/lib -lconfig_service_export \
-		  -L./extends/ngx_http_hello_module/input/vrvService/lib -lvrv_service_export \
-		  -L./extends/ngx_http_hello_module/input/commonService/lib -lcommon_service_export \
-		  -L./extends/ngx_http_hello_module/input/cacheService/lib -lcache_service_export \
-		  -L./extends/ngx_http_hello_module/jsoncpp/lib -ljson \
-		  -L./extends/ngx_http_hello_module/thrift-0.9.1/lib -lthrift
+MY_LIBS = -L./extends/ngx_http_tcpservlet_module/input/configService/lib -lconfig_service_export \
+		  -L./extends/ngx_http_tcpservlet_module/input/vrvService/lib -lvrv_service_export \
+		  -L./extends/ngx_http_tcpservlet_module/input/commonService/lib -lcommon_service_export \
+		  -L./extends/ngx_http_tcpservlet_module/input/cacheService/lib -lcache_service_export \
+		  -L./extends/ngx_http_tcpservlet_module/jsoncpp/lib -ljson \
+		  -L./extends/ngx_http_tcpservlet_module/thrift-0.9.1/lib -lthrift
 
-MY_CXXFLAGS = ${MY_INCLUDE} ${MY_LIBS}
-
+MY_CXXFLAGS = ${MY_INCLUDE} ${MY_LIBS} -D_DEBUG
 
 ALL_INCS = -I src/core \
 	-I src/event \
@@ -219,8 +218,6 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_static_module.o \
 	objs/src/http/modules/ngx_http_autoindex_module.o \
 	objs/src/http/modules/ngx_http_index_module.o \
-	objs/src/http/modules/ngx_http_mirror_module.o \
-	objs/src/http/modules/ngx_http_try_files_module.o \
 	objs/src/http/modules/ngx_http_auth_basic_module.o \
 	objs/src/http/modules/ngx_http_access_module.o \
 	objs/src/http/modules/ngx_http_limit_conn_module.o \
@@ -242,8 +239,9 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_least_conn_module.o \
 	objs/src/http/modules/ngx_http_upstream_keepalive_module.o \
 	objs/src/http/modules/ngx_http_upstream_zone_module.o \
-	objs/addon/ngx_http_hello_module/ngx_http_hello_module.o \
-	objs/addon/ngx_http_hello_module/service_request.o \
+	objs/addon/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.o \
+	objs/addon/ngx_http_tcpservlet_module/service_request.o \
+	objs/addon/ngx_http_tcpservlet_module/mutex.o \
 	objs/ngx_modules.o
 
 	$(LINK) -o objs/nginx \
@@ -341,8 +339,6 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_static_module.o \
 	objs/src/http/modules/ngx_http_autoindex_module.o \
 	objs/src/http/modules/ngx_http_index_module.o \
-	objs/src/http/modules/ngx_http_mirror_module.o \
-	objs/src/http/modules/ngx_http_try_files_module.o \
 	objs/src/http/modules/ngx_http_auth_basic_module.o \
 	objs/src/http/modules/ngx_http_access_module.o \
 	objs/src/http/modules/ngx_http_limit_conn_module.o \
@@ -364,12 +360,14 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_least_conn_module.o \
 	objs/src/http/modules/ngx_http_upstream_keepalive_module.o \
 	objs/src/http/modules/ngx_http_upstream_zone_module.o \
-	objs/addon/ngx_http_hello_module/ngx_http_hello_module.o \
-	objs/addon/ngx_http_hello_module/service_request.o \
+	objs/addon/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.o \
+	objs/addon/ngx_http_tcpservlet_module/service_request.o \
+	objs/addon/ngx_http_tcpservlet_module/mutex.o \
 	objs/ngx_modules.o \
 	-ldl -lpthread -lcrypt -lpcre -lz \
 	-Wl,-E \
 	${MY_LIBS}
+	
 
 
 modules:
@@ -1039,20 +1037,6 @@ objs/src/http/modules/ngx_http_index_module.o:	$(CORE_DEPS) $(HTTP_DEPS) \
 		src/http/modules/ngx_http_index_module.c
 
 
-objs/src/http/modules/ngx_http_mirror_module.o:	$(CORE_DEPS) $(HTTP_DEPS) \
-	src/http/modules/ngx_http_mirror_module.c
-	$(CC) -c $(CFLAGS) $(CORE_INCS) $(HTTP_INCS) \
-		-o objs/src/http/modules/ngx_http_mirror_module.o \
-		src/http/modules/ngx_http_mirror_module.c
-
-
-objs/src/http/modules/ngx_http_try_files_module.o:	$(CORE_DEPS) $(HTTP_DEPS) \
-	src/http/modules/ngx_http_try_files_module.c
-	$(CC) -c $(CFLAGS) $(CORE_INCS) $(HTTP_INCS) \
-		-o objs/src/http/modules/ngx_http_try_files_module.o \
-		src/http/modules/ngx_http_try_files_module.c
-
-
 objs/src/http/modules/ngx_http_auth_basic_module.o:	$(CORE_DEPS) $(HTTP_DEPS) \
 	src/http/modules/ngx_http_auth_basic_module.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) $(HTTP_INCS) \
@@ -1200,18 +1184,23 @@ objs/src/http/modules/ngx_http_upstream_zone_module.o:	$(CORE_DEPS) $(HTTP_DEPS)
 		src/http/modules/ngx_http_upstream_zone_module.c
 
 
-objs/addon/ngx_http_hello_module/ngx_http_hello_module.o:	$(ADDON_DEPS) \
-	/root/nginx/nginx-1.13.6/extends/ngx_http_hello_module/ngx_http_hello_module.cpp
+objs/addon/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.o:	$(ADDON_DEPS) \
+	./extends/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.cpp
 	$(CXX) -c $(CFLAGS)  $(ALL_INCS) ${MY_INCLUDE} \
-		-o objs/addon/ngx_http_hello_module/ngx_http_hello_module.o \
-		/root/nginx/nginx-1.13.6/extends/ngx_http_hello_module/ngx_http_hello_module.cpp
+		-o objs/addon/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.o \
+		./extends/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.cpp
 
-
-objs/addon/ngx_http_hello_module/service_request.o:	$(ADDON_DEPS) \
-	/root/nginx/nginx-1.13.6/extends/ngx_http_hello_module/service_request.cpp
+objs/addon/ngx_http_tcpservlet_module/service_request.o: $(ADDON_DEPS) \
+	./extends/ngx_http_tcpservlet_module/service_request.cpp
 	$(CXX) -c $(CFLAGS)  $(ALL_INCS)  ${MY_CXXFLAGS} \
-		-o objs/addon/ngx_http_hello_module/service_request.o \
-		/root/nginx/nginx-1.13.6/extends/ngx_http_hello_module/service_request.cpp
+		-o objs/addon/ngx_http_tcpservlet_module/service_request.o \
+		./extends/ngx_http_tcpservlet_module/service_request.cpp
+
+objs/addon/ngx_http_tcpservlet_module/mutex.o: $(ADDON_DEPS) \
+	./extends/ngx_http_tcpservlet_module/mutex.cpp
+	$(CXX) -c $(CFLAGS)  $(ALL_INCS)  ${MY_CXXFLAGS} \
+		-o objs/addon/ngx_http_tcpservlet_module/mutex.o \
+		./extends/ngx_http_tcpservlet_module/mutex.cpp
 
 
 manpage:	objs/nginx.8
