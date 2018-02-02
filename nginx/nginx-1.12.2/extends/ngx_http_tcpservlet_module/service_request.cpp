@@ -22,19 +22,33 @@ using namespace com::vrv::cems::common::thrift::service;
 using namespace com::vrv::cems::service::base::interfaces;
 using namespace std;
 
-ServiceRequest::ServiceRequest(const string& ip, const string& port):
-server_ip_(ip),
-server_port_(port),
+ServiceRequest::ServiceRequest():
+server_ip_(""),
+server_port_(""),
 session_map_lock_(),
 session_map_(),
 service_addr_map_lock_(),
 service_addr_map_(),
 log_(NULL)
 {
+    printf("ServiceRequest constructor.\n");
 }
 
 ServiceRequest::~ServiceRequest()
 {
+}
+
+int ServiceRequest::SetAddr(const std::string& ip, const std::string& port)
+{
+    printf("SetAddr: ip=%s, port=%s\n", ip.c_str(), port.c_str());
+    if(ip.empty() || port.empty())
+    {
+        ngx_log_error(NGX_LOG_ERR, log_, 0, "SetAddr: ip or port is empty.");
+        return -1;
+    }
+    server_ip_ = ip;
+    server_port_ = port;
+    return 0;
 }
 
 void ServiceRequest::QueryService(std::vector<ServiceConfigBean>& service_info, const std::string& service_code, const std::string& version)

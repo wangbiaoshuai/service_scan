@@ -14,10 +14,12 @@ static void ngx_http_tcpservlet_body_handler(ngx_http_request_t* r);
 using namespace std;
 #include "service_request.h"
 
+static ServiceRequest service;
+
 static ngx_command_t ngx_http_tcpservlet_commands[] = {
     {
         ngx_string("configure_server"),
-        NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_HTTP_LMT_CONF|NGX_CONF_TAKE2,
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE2,
         ngx_http_tcpservlet,
         NGX_HTTP_LOC_CONF_OFFSET,
         0,
@@ -31,6 +33,18 @@ static char* ngx_http_tcpservlet(ngx_conf_t* cf, ngx_command_t* cmd, void* conf)
     ngx_http_core_loc_conf_t *clcf;
     clcf = (ngx_http_core_loc_conf_t*)ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_tcpservlet_handler;
+    if(cf->args->nelts < 3)
+    {
+        return (char*)NGX_CONF_ERROR;
+    }
+    string ip, port;
+    ngx_str_t* serv_arg = (ngx_str_t*)(cf->args->elts);
+    serv_arg++;
+    ip = string((char*)(serv_arg->data));
+    serv_arg++;
+    port = string((char*)(serv_arg->data));
+
+    service.SetAddr(ip, port);
     return NGX_CONF_OK;
 }
 
@@ -87,7 +101,7 @@ void ngx_http_tcpservlet_body_handler(ngx_http_request_t* r)
             break;
         }
 
-        ServiceRequest service("192.168.133.148", "8100");
+        //ServiceRequest service("192.168.133.148", "8100");
         service.SetLog(r->connection->log);
         PARAM_INFO param_info;
         if(service.ParseMsgBody(body.data, body.len, param_info) < 0)
@@ -105,6 +119,8 @@ void ngx_http_tcpservlet_body_handler(ngx_http_request_t* r)
             ngx_str_set(&response, "thrift rpc failed.");
             break;
         }
+
+        ngx_log_error(NGX_LOG_DEBUG, r->connection->log, 0, "GetdataTC result: %s", result.c_str());
 
         response.len = result.length();
         response.data = (u_char*)ngx_pcalloc(r->pool, response.len);

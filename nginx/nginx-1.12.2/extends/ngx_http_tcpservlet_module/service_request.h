@@ -63,8 +63,9 @@ typedef struct Address
 class ServiceRequest
 {
 public:
-    ServiceRequest(const std::string& ip, const std::string& port);
+    ServiceRequest();
     ~ServiceRequest();
+    int SetAddr(const std::string& ip, const std::string& port);
     int ParseMsgBody(const void* msg, unsigned int len, PARAM_INFO& param_info);
     std::string GetdataTC(const PARAM_INFO& param_info);
     void SetLog(ngx_log_t* log);
