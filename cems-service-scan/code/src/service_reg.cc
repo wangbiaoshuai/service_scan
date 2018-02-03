@@ -5,6 +5,7 @@
 #include <transport/TBufferTransports.h>
 #include <protocol/TCompactProtocol.h>
 #include <protocol/TBinaryProtocol.h>
+#include <sys/time.h>
 
 #include "parse_configure.h"
 #include "common_function.h"
@@ -87,9 +88,11 @@ bool ServiceReg::ReadConfig()
     service_bean_.description = SERVICE_SCAN_DESC;
     //ParseConfigure::GetInstance().GetProperty(key, service_bean_.description);
 
-    time_t timer = time(NULL);
+    struct timeval timer;
+    gettimeofday(&timer, NULL);
+    int64_t current_time = timer.tv_sec * 1000 + timer.tv_usec / 1000;
     service_bean_.__isset.installTime = true;
-    service_bean_.installTime = timer;
+    service_bean_.installTime = current_time;
 
     LOG_DEBUG("ServiceReg::ReadConfig success!");
     return true;
@@ -111,7 +114,7 @@ void ServiceReg::WriteConfig()
     ParseConfigure::GetInstance().SetProperty(key, service_bean_.SSID, 0);
 
     key = "service.installTime";
-    time_t time = service_bean_.installTime;
+    time_t time = service_bean_.installTime / 1000;
     char tmBuf[100] = {0};
     strftime(tmBuf, 100, "%Y-%m-%d %H:%M:%S", localtime(&time));
     stringstream ss;
