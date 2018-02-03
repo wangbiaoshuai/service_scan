@@ -13,7 +13,7 @@ using namespace com::vrv::im::service;
 #define SERVICE_CODE_ADDRESS "00FF0600"
 #define MINCODE_ADDRESS_AREAID "8"
 #define LOG_CONFIG_PATH "../config/log4cplus.properties"
-#define SERVICE_SCAN_DESC "\u626b\u63cf\u670d\u52a1"
+#define SERVICE_SCAN_DESC "\u4e2d\u8f6c\u670d\u52a1"
 
 class ServiceReg
 {
