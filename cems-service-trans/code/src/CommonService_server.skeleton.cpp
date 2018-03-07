@@ -258,6 +258,7 @@ int init_daemon(void)  //创建守护进程
 #include <sys/stat.h>
 int init_daemon(void)  //创建守护进程
 {
+    setvbuf(stdout, NULL, _IOLBF, 0); //设置stdout的缓冲类型为行缓冲
     int pid;
     string cur_path = GetCurrentPath();
 
