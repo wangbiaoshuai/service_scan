@@ -95,8 +95,8 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
     document = new TiXmlDocument(policy_file_.c_str());
     if(!document)
     {
-        return -1;
         LOG_ERROR("ReadPolicy: document is NULL.");
+        return -1;
     }
 
     int ret = 0;
@@ -173,6 +173,8 @@ int ParsePolicy::ReadPolicy(PolicyParam& policy_param)
                         {
                             orgId = element->GetText() ? element->GetText() : "";
                         }
+
+                        orgId = "ServiceAreaMain";
 
                         if(!orgId.empty() && !ip.empty())
                         {
