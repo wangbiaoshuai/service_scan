@@ -29,7 +29,6 @@ chmod u+s  cemsscan
 
 #sh exec
 #chmod +x   restart.sh
-chmod +x   self.sh
 
 #change own group
 chown root CEMS-SERVICE-SCAN
