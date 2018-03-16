@@ -183,11 +183,11 @@ typedef std::list<MAP_COMMON> LIST_KEYS;
 
 #define SERVICE_CODE_CONFIG     "00FF0100"          //配置服务
 #define SERVICE_CODE_BLOCK      "00010400"          //阻断服务
-#define SERVICE_CODE_CENTER     "00FF0A00"          //数据处理服务
+#define SERVICE_CODE_CENTER     "00FF1B01"          //新注册服务
 #define SERVICE_CODE_TOPO       "00010200"          //拓扑服务
-#define MINCODE_CENTER          "2101"                  
+#define MINCODE_CENTER          "21"                  
 #define MINCODE_BLOCK           "2100"
-#define MINCODE_SNMP        "2101"             //snmp扫描
+#define MINCODE_SNMP        "21"             //snmp扫描
 
 #define SERVICE_CODE_ADDRESS	"00FF0600"	    //地址服务
 #define MINCODE_ADDRESS_AREAID		"8"		    //获取AreaId

@@ -392,6 +392,8 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
 
     //register_mutex_.Lock();
     register_dev_.insert(mapDev::value_type(uip, devinfo));
+    std::string szText = CreateSendText(devinfo);
+    LOG_DEBUG("parseClientPack: discover register device: "<<szText.c_str());
     //register_mutex_.Unlock();
 
     printf("areaId = %s\n", devinfo.szAreaId.c_str());
@@ -403,7 +405,7 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
         if(iter == roaming_dev_.end())
         {
             roaming_dev_.insert(mapDev::value_type(uip, devinfo));//漫游设备
-            std::string szText = CreateSendText(devinfo);
+            //std::string szText = CreateSendText(devinfo);
 
             printf("漫游设备: %s\n", szText.c_str());
             LOG_DEBUG("parseClientPack: discover roaming device: "<<szText.c_str());

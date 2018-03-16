@@ -12,6 +12,8 @@
 #include "common_function.h"
 #include "SnmpScan.h"
 
+extern const char* log_file;
+
 namespace cems{ namespace service{ namespace scan{
 using namespace std;
 
@@ -255,6 +257,13 @@ int FastScan::StartScan()
             sleep_time = atoi(policy_param.interval_time.c_str()); 
         }
         LOG_INFO("StartScan: scan end. sleep " << sleep_time << "S...");
+
+        FILE* fp = fopen(log_file, "w");
+        if(fp)
+        {
+            LOG_DEBUG("StartScan: clean stdout log.");
+            fclose(fp);
+        }
         sleep(sleep_time);
     }
     return 0;
