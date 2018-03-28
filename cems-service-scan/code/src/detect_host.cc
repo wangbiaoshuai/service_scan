@@ -252,14 +252,12 @@ int DetectHost::DepthScan()
             bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
             if(!bret)
             {
-                printf("send to data service fail\n");
                 LOG_ERROR("DepthScan: send data to center service failed. data:"<<szText);
             }
 
             bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
-                printf("send to block service fail\n");
                 LOG_ERROR("DepthScan: send data to block service failed. data:"<<szText);
             }
             exit(0);
@@ -343,8 +341,6 @@ void DetectHost::RecvClientPack()
         it++;
     }
     //register_mutex_.Unlock();
-
-    printf("client exit\n");
 }
 
 void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
@@ -371,7 +367,6 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
         std::string szErrorText = "解析客户端回包错误";
         szErrorText += szip;
         szErrorText += szjdata;
-        printf("%s\n", szErrorText.c_str());
         LOG_ERROR("parseClientPack: parse client package error:"<<szjdata);
         return;
     }
@@ -396,9 +391,6 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
     LOG_DEBUG("parseClientPack: discover register device: "<<szText.c_str());
     //register_mutex_.Unlock();
 
-    printf("areaId = %s\n", devinfo.szAreaId.c_str());
-    printf("regAreaId = %s\n", devinfo.szRegAreaId.c_str());
-
     if(devinfo.szAreaId.compare(devinfo.szRegAreaId) != 0) //漫游主机(区域id不同)
     {
         mapDev::iterator iter = roaming_dev_.find(uip);
@@ -407,21 +399,18 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
             roaming_dev_.insert(mapDev::value_type(uip, devinfo));//漫游设备
             //std::string szText = CreateSendText(devinfo);
 
-            printf("漫游设备: %s\n", szText.c_str());
             LOG_DEBUG("parseClientPack: discover roaming device: "<<szText.c_str());
 
             bool bret;
             bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
             if(!bret)
             {
-                printf("send to data service fail\n");
                 LOG_ERROR("parseClientPack: send data to center service failed. data:"<<szText);
             }
 
             bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
-                printf("send to block service fail\n");
                 LOG_ERROR("parseClientPack: send data to block service failed. data:"<<szText);
             }
             if(detect_mode_ == 1)
@@ -566,21 +555,18 @@ bool DetectHost::RecvIcmpPack()
                     }
                     std::string szText = CreateSendText(device);
                     LOG_DEBUG("recvPingPack: discover unregister device: " << szText.c_str());
-                    printf("PING发现未注册主机 = %s\n", szText.c_str());
 
                     bool bret1, bret2;
                     bret1 = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
                     if(!bret1)
                     {
                         LOG_ERROR("recvPingPack: send data to center service error, data:"<<szText.c_str());
-                        printf("send to data service fail\n");
                     }
 
                     bret2 = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
                     if(!bret2)
                     {
                         LOG_ERROR("recvPingPack: send data to block service error, data:"<<szText.c_str());
-                        printf("send to block service fail\n");
                     }
                     if(bret1 && bret2)
                     {
@@ -597,7 +583,6 @@ bool DetectHost::RecvIcmpPack()
             }
         }
     }
-    printf("ping thread exit\n");
     return true;
 }
 
@@ -615,7 +600,6 @@ bool DetectHost::ParseIcmpPack(char *buf,int len)
     len -= iphdrlen;            /*ICMP报头及ICMP数据报的总长度*/
     if(len < 8)                /*小于ICMP报头长度则不合理*/
     {
-        printf("ICMP packets\'s length is less than 8\n");
         return false;
     }
     /*确保所接收的是我所发的的ICMP的回应*/
@@ -707,20 +691,17 @@ void DetectHost::RecvNbtPack()
             {
                 std::string szText = CreateSendText(device);
                 LOG_DEBUG("recvNbtPack: discover unregister device: " << szText.c_str());
-                printf("NBT发现未注册主机 = %s\n", szText.c_str());
                 bool bret1, bret2;
                 bret1 = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
                 if(!bret1)
                 {
                     LOG_ERROR("recvNbtPack: send data to center service error, data:"<<szText.c_str());
-                    printf("send to data service fail\n");
                 }
 
                 bret2 = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
                 if(!bret2)
                 {
                     LOG_ERROR("recvNbtPack: send data to block service error, data:"<<szText.c_str());
-                    printf("send to block service fail\n");
                 }
                 if(bret1 && bret2)
                 {
@@ -890,7 +871,6 @@ bool DetectHost::SendPack(unsigned long uip, SEND_TYPE type)
 
         if((len = sendto(sockud_,  (const char*)&nbns, sizeof(nbns), 0, (struct sockaddr *)&toAddr, sizeof(toAddr))) < 0 )
         {
-            printf("udp sendto fail, size = %d, pack size = %lu\n", len, sizeof(nbns));
             return false;
         }
     }
@@ -901,7 +881,6 @@ bool DetectHost::SendPack(unsigned long uip, SEND_TYPE type)
 
         if((len = sendto(sockfd_, sendpacket, packetsize, 0, (struct sockaddr *) &dest_addr, sizeof(dest_addr))) < 0  )
         {
-            printf("icmp sendto fail\n");
             return false;
         }
     }   
@@ -921,7 +900,6 @@ bool DetectHost::SendPack(unsigned long uip, SEND_TYPE type)
 
         if((len = sendto(sockcd_, sendbuffer, len, 0, (struct sockaddr *)&toAddr, sizeof(toAddr))) < 0)
         {
-            printf("client udp sendto fail, size = %d\n", len);
             return false;		
         }		
     }
@@ -1007,7 +985,6 @@ int DetectHost::ClientProbe(MAP_COMMON* ipRange)
     LOG_INFO("ClientProbe: start.");
     if((sockcd_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
-        printf("socket udp create fail\n");
         return -1;
     }
 
@@ -1023,25 +1000,25 @@ int DetectHost::ClientProbe(MAP_COMMON* ipRange)
     rc = pthread_create(&t_send, NULL, SendPackProc, (void*)&param);
     if(rc != 0)
     {
-        printf("create thread fail %s\n", strerror(rc));
+        LOG_ERROR("ClientProbe: create thread failed.("<<strerror(rc)<<")");
     }
 
     rc = pthread_create(&t_recv, NULL, RecvRegProc, (void*)this);
     if(rc != 0)
     {
-        printf("create thread fail %s\n", strerror(rc));
+        LOG_ERROR("ClientProbe: create thread failed.("<<strerror(rc)<<")");
     }
 
     rc = pthread_join(t_send, NULL);
     if(rc != 0)
     {
-        printf("pthread_join error = %s\n", strerror(rc));
+        LOG_ERROR("ClientProbe: pthread_join error.("<<strerror(rc)<<")");
     }
 
     rc = pthread_join(t_recv, NULL);
     if(rc != 0)
     {
-        printf("pthread_join error = %s\n", strerror(rc));
+        LOG_ERROR("ClientProbe: pthread_join error.("<<strerror(rc)<<")");
     }
 
     close(sockcd_);
@@ -1062,7 +1039,7 @@ int DetectHost::IcmpProbe(MAP_COMMON* const ipRange)
 
     if((sockfd_ = socket(AF_INET, SOCK_RAW, protocol->p_proto)) < 0)
     {
-        printf("socket raw  creat fail\n");
+        LOG_ERROR("IcmpProbe: socket raw create failed.");
         return -1;
     }
 
@@ -1094,22 +1071,22 @@ int DetectHost::IcmpProbe(MAP_COMMON* const ipRange)
     int rc = pthread_create(&t_sendDetec, NULL, SendPackProc, (void*)&param);
     if(rc != 0)
     {
-        printf("create thread fail %s\n", strerror(rc));
+        LOG_ERROR("IcmpProbe: create thread failed.("<<strerror(rc)<<")");
     }
     rc = pthread_create(&t_recvPing, NULL, RecvPingProc, (void*)this);
     if(rc != 0)
     {
-        printf("create thread fail %s\n", strerror(rc));
+        LOG_ERROR("IcmpProbe: create thread failed.("<<strerror(rc)<<")");
     }
     rc = pthread_join(t_sendDetec, NULL);
     if(rc != 0)
     {
-        printf("pthread_join error = %s\n", strerror(rc));
+        LOG_ERROR("IcmpProbe: pthread_join error.("<<strerror(rc)<<")");
     }
     rc = pthread_join(t_recvPing, NULL);
     if(rc != 0)
     {
-        printf("pthread_join error = %s\n", strerror(rc));
+        LOG_ERROR("IcmpProbe: pthread_join error.("<<strerror(rc)<<")");
     }
 
     close(sockfd_);
@@ -1123,7 +1100,7 @@ int DetectHost::NbtProbe(MAP_COMMON* const ipRange)
     nbt_scan_stop_ = 0;
     if((sockud_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
-        printf("socket udp create fail\n");
+        LOG_ERROR("NbtProbe: socket udp create failed.");
         return -1;
     }
  
@@ -1139,23 +1116,23 @@ int DetectHost::NbtProbe(MAP_COMMON* const ipRange)
     rc = pthread_create(&t_sendDetec, NULL, SendPackProc, (void*)&param);
     if(rc != 0)
     {
-        printf("create thread fail %s\n", strerror(rc));
+        LOG_ERROR("NbtProbe: create thread failed.("<<strerror(rc)<<")");
     }
     rc = pthread_create(&t_recvNbt, NULL, RecvNbtProc, (void*)this);
     if(rc != 0)
     {
-        printf("create thread fail %s\n", strerror(rc));
+        LOG_ERROR("NbtProbe: create thread failed.("<<strerror(rc)<<")");
     }
     rc = pthread_join(t_sendDetec, NULL);
     if(rc != 0)
     {
-        printf("pthread_join error = %s\n", strerror(rc));
+        LOG_ERROR("NbtProbe: pthread_join error.("<<strerror(rc)<<")");
     }
 
     rc = pthread_join(t_recvNbt, NULL);
     if(rc != 0)
     {
-        printf("pthread_join error = %s\n", strerror(rc));
+        LOG_ERROR("NbtProbe: pthread_join error.("<<strerror(rc)<<")");
     }
     close(sockud_);
     LOG_INFO("NbtProbe: end.");
@@ -1195,7 +1172,6 @@ int DetectHost::CalculateCloseDev()
             Addr.sin_addr.s_addr = htonl(it->first);
             std::string szip = inet_ntoa(Addr.sin_addr);
 
-            printf("发现关机设备 = %s\n", szip.c_str());
             LOG_DEBUG("DetectClose: discover register->shutdown device: "<<szText.c_str());
 
             bool bret;
@@ -1203,14 +1179,12 @@ int DetectHost::CalculateCloseDev()
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
-                printf("send to data service fail\n");
             }
 
             bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
-                printf("send to block service fail\n");
 
             }
             if(detect_mode_ == 1)
@@ -1247,7 +1221,6 @@ int DetectHost::CalculateCloseDev()
             Addr.sin_addr.s_addr = htonl(it->first);
             std::string szip = inet_ntoa(Addr.sin_addr);
 
-            printf("发现关机设备 = %s\n", szip.c_str());
             LOG_DEBUG("DetectClose: discover unregister->shutdown device: "<<szText.c_str());
 
             bool bret;
@@ -1255,14 +1228,12 @@ int DetectHost::CalculateCloseDev()
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
-                printf("send to data service fail\n");
             }
 
             bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
             if(!bret)
             {
                 LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
-                printf("send to block service fail\n");
 
             }
             if(detect_mode_ == 1)
@@ -1309,7 +1280,6 @@ bool getsockaddr(const char * hostOrIp, struct sockaddr_in* sockaddr)
     {
         if((host = gethostbyname(hostOrIp)) == NULL) /*是主机名*/
         {
-            /*printf("gethostbyname error:%s\n", hostOrIp);*/
             return false;
         }
         memcpy( (char *)&dest_addr.sin_addr,host->h_addr,host->h_length);

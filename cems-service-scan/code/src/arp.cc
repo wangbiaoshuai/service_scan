@@ -62,12 +62,9 @@ string get_default_device()
     }
 
     interface_num = ifc.ifc_len / sizeof(struct ifreq);
-    printf("The number of interfaces is %d\n", interface_num);
 
     while(interface_num--)
     {
-        printf("Net device: %s\n", buf[interface_num].ifr_name);
-
         if(ioctl(sock_fd, SIOCGIFFLAGS, (char *)&buf[interface_num]) < 0)
         {
             perror("Get the active flag word of the device");
@@ -76,12 +73,18 @@ string get_default_device()
         }
 
         if(buf[interface_num].ifr_flags & IFF_PROMISC)
-            printf("Interface is in promiscuous mode\n");
+        {
+            LOG_ERROR("Interface is in promiscuous mode.");
+        }
 
         if(buf[interface_num].ifr_flags & IFF_UP)
-            printf("Interface is running\n");
+        {
+            LOG_DEBUG("interface is running.");
+        }
         else
-            printf("Interface is not running\n");
+        {
+            LOG_ERROR("interface is not running.");
+        }
 
         if(ioctl(sock_fd, SIOCGIFADDR, (char *)&buf[interface_num]) < 0)
         {
@@ -96,7 +99,6 @@ string get_default_device()
         {
             mip.push_back(buf[interface_num].ifr_name);
         }
-        printf("%s:%s\n", buf[interface_num].ifr_name, szIp.c_str());
     }
     close(sock_fd);
 
@@ -131,12 +133,14 @@ struct in_addr get_src_ip(const char * devices)//获得本机相应网卡的ip
     {
         //将socket连接到相应的inet地址上
         LOG_WARN("connect: "<<strerror(errno));
+        close(sock_id);
         return saddr.sin_addr;
     }
     if (getsockname(sock_id, (struct sockaddr*)&saddr, (socklen_t*)&alen) == -1) 
     {
         //通过socket获得绑定的ip地址
         LOG_WARN("getsockname: "<<strerror(errno));
+        close(sock_id);
         return saddr.sin_addr;
     }
     close(sock_id);
@@ -325,6 +329,7 @@ int get_mac_addr(const std::string& ip, std::string& mac)
         if (recv_size < 0) 
         {
             LOG_WARN("get_mac_addr: recvfrom "<<strerror(errno));
+            close(socket_id);
             return -1;;
         }
         
@@ -343,7 +348,7 @@ int get_mac_addr(const std::string& ip, std::string& mac)
             recv_count++; 
         }
     }while(recv_count < 4);
-
+    close(socket_id);
     return ret;
 }
 

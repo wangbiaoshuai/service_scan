@@ -256,6 +256,20 @@ int TransportPool::DeleteTransport(Transport* trans)
 
     pthread_mutex_lock(&mutex_);
     int index = trans->index;
+    try
+    {
+        trans->m_transport->close();
+    }
+    catch(TTransportException te)
+    {
+        string exception(te.what());
+        LOG_ERROR("DeleteTransport: close error("<<exception.c_str()<<").");
+    }
+    catch(TException tx)
+    {
+        string exception(tx.what());
+        LOG_ERROR("DeleteTransport: close error("<<exception.c_str()<<").");
+    }
     transport_pool_.erase(index);
     cur_size_ --;
     pthread_mutex_unlock(&mutex_);

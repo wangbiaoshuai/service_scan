@@ -61,8 +61,6 @@ void OutPutString(char* szContent)
 
     char tmBuf[100] = {0};
     sprintf(tmBuf, "%04d-%02d-%02d %02d:%02d:%02d:\n", ptm->tm_year + 1900, ptm->tm_mon + 1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
-    printf("%s", tmBuf);
-    printf("%s\n", szContent);
 }
 
 bool  CreateDirectory(const char * sPathName)
@@ -241,12 +239,9 @@ std::string GetCurrentIp()
     }
 
     interface_num = ifc.ifc_len / sizeof(struct ifreq);
-    printf("The number of interfaces is %d\n", interface_num);
 
     while(interface_num--)
     {
-        printf("Net device: %s\n", buf[interface_num].ifr_name);
-
         if(ioctl(sock_fd, SIOCGIFFLAGS, (char *)&buf[interface_num]) < 0)
         {
             perror("Get the active flag word of the device");
@@ -255,12 +250,18 @@ std::string GetCurrentIp()
         }
 
         if(buf[interface_num].ifr_flags & IFF_PROMISC)
-            printf("Interface is in promiscuous mode\n");
+        {
+            LOG_DEBUG("Interface is in promiscuous mode.");
+        }
 
         if(buf[interface_num].ifr_flags & IFF_UP)
-            printf("Interface is running\n");
+        {
+            LOG_DEBUG("interface is running.");
+        }
         else
-            printf("Interface is not running\n");
+        {
+            LOG_ERROR("Interface is not running.");
+        }
 
         if(ioctl(sock_fd, SIOCGIFADDR, (char *)&buf[interface_num]) < 0)
         {
@@ -302,12 +303,9 @@ std::string GetIps(vector<string> & mip)
     }
 
     interface_num = ifc.ifc_len / sizeof(struct ifreq);
-    printf("The number of interfaces is %d\n", interface_num);
 
     while(interface_num--)
     {
-        printf("Net device: %s\n", buf[interface_num].ifr_name);
-
         if(ioctl(sock_fd, SIOCGIFFLAGS, (char *)&buf[interface_num]) < 0)
         {
             perror("Get the active flag word of the device");
@@ -316,12 +314,18 @@ std::string GetIps(vector<string> & mip)
         }
 
         if(buf[interface_num].ifr_flags & IFF_PROMISC)
-            printf("Interface is in promiscuous mode\n");
+        {
+            LOG_DEBUG("interface is in promiscuous mode.");
+        }
 
         if(buf[interface_num].ifr_flags & IFF_UP)
-            printf("Interface is running\n");
+        {
+            LOG_DEBUG("interface is running.");
+        }
         else
-            printf("Interface is not running\n");
+        {
+            LOG_ERROR("Interface is not running.");
+        }
 
         if(ioctl(sock_fd, SIOCGIFADDR, (char *)&buf[interface_num]) < 0)
         {
