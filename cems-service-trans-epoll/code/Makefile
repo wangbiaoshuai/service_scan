@@ -20,7 +20,7 @@ LIBS = -Wl,-R,"../lib" \
 	   -L${JSON_PATH}/lib -ljson \
 	   -L${TINYXML_PATH}/lib -ltinyxml \
 	   -L${THREAD_POOL_PATH}/lib -lthread_pool \
-	   -L./lib -lconfig_service_export -lvrv_service_export \
+	   -L./lib -lconfig_service_export -lvrv_service_export -lboost_system \
 	   -lssl -lcrypto
 
 ifeq ($(debug), 1)
@@ -32,7 +32,7 @@ endif
 CXX = g++
 CXXFLAGS = -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT ${DEBUG}
 PROJECT = cemstrans
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o .build/matchmsg.o .build/transfer_server.o .build/parse_policy.o
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/conv.o .build/matchmsg.o .build/transfer_server.o .build/parse_policy.o .build/start_trans.o .build/transferserver.o
 
 all: foremost ${PROJECT}
 
@@ -89,6 +89,12 @@ ${PROJECT}: ${OBJECTS}
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 .build/parse_policy.o: src/parse_policy.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/start_trans.o: src/start_trans.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/transferserver.o: src/transferserver.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 

@@ -26,6 +26,8 @@ using namespace cems::service::scan;
 #define MATCH_COUNT 45
 #define RECV_TIMEOUT 10
 
+static void* transfer_function(void*);
+
 TransferServer::TransferServer(int port):
 port_(port),
 listen_sock_(-1),
@@ -338,6 +340,7 @@ void* process_msg(void* args)
         {
             LOG_ERROR("error event, close socket.");
             close(sock);
+            context->session_map_.erase(sock);
             return NULL;
         }
     }
@@ -364,7 +367,7 @@ int TransferServer::StartServer()
 
     struct epoll_event event;
     struct epoll_event evs[EVENT_NUM];
-    event.events = EPOLLIN | EPOLLET;
+    event.events = EPOLLIN;
     event.data.fd = listen_sock_;
     epoll_ctl(epfd_, EPOLL_CTL_ADD, listen_sock_, &event);
 

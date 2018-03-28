@@ -325,7 +325,7 @@ int init_daemon(void)  //创建守护进程
     return 0;
 }
 
-//extern int StartTrans();
+extern int StartTrans();
 int main(int argc, char **argv) 
 {
     init_daemon();
@@ -339,11 +339,26 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    TransferServer transfer_server(SCREEN_PORT);
-    if(transfer_server.Start() < 0)
+    string key = "service.workMode";
+    string value;
+    ParseConfigure::GetInstance().GetProperty(key, value);
+
+    if(value == "epoll")
     {
-        LOG_ERROR("main: StartTrans failed.");
-        return -1;
+        TransferServer transfer_server(SCREEN_PORT);
+        if(transfer_server.Start() < 0)
+        {
+            LOG_ERROR("main: StartTrans failed.");
+            return -1;
+        }
+    }
+    else
+    {
+        if(StartTrans() != 0)
+        {
+            LOG_ERROR("main: StartTrans failed.");
+            return -1;
+        }
     }
 
     int port = service_reg.GetServicePort();
