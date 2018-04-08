@@ -29,7 +29,7 @@ endif
 CXX = g++
 CXXFLAGS = -Wall -Wl,--as-needed ${INCLUDE} ${LIBS} -lpthread -D_REENTRANT ${DEBUG}
 PROJECT = cemsscan
-OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/detect_host.o .build/upreport.o .build/conv.o .build/parse_policy.o .build/SnmpScan.o .build/SnmpReport.o .build/arp.o .build/transport_pool.o
+OBJECTS = .build/commonService_constants.o  .build/CommonService.o .build/CommonService_server.skeleton.o .build/commonService_types.o .build/parse_configure.o .build/service_reg.o .build/gen_algorithm.o .build/common_function.o .build/md5module.o .build/CRC32.o .build/mutex.o .build/fastscan.o .build/detect_host.o .build/upreport.o .build/conv.o .build/parse_policy.o .build/SnmpScan.o .build/SnmpReport.o .build/arp.o .build/transport_pool.o .build/dev_manager.o
 
 all: foremost ${PROJECT}
 
@@ -101,6 +101,9 @@ ${PROJECT}: ${OBJECTS}
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 .build/transport_pool.o: src/transport_pool.cc
+	${CXX} -o $@ -c $^ ${CXXFLAGS}
+
+.build/dev_manager.o: src/dev_manager.cc
 	${CXX} -o $@ -c $^ ${CXXFLAGS}
 
 

@@ -16,7 +16,6 @@ using namespace std;
 #define THREAD_SLEEP_TIME	5*1000*1000
 #define SOCKET_SELECT_TIMEOUT	3*1000*1000
 #define PACKET_SIZE     4096
-#define SCAN_UNREPLY_COUNT	3
 static const int g_datalen = 40;
 
 struct timeval tvSub(struct timeval timeval1,struct timeval timeval2);
@@ -31,18 +30,7 @@ typedef struct
 }SendPackParam;
 
 DetectHost::DetectHost():
-detect_mode_(0),
-//unregister_mutex_(),
-//register_mutex_(),
-nmap_dev_mutex_(),
-report_block_(),
-report_center_(),
-unregister_dev_(),
-unregister_dev_keep_(),
-register_dev_(),
-register_dev_keep_(),
-roaming_dev_(),
-nmap_dev_(),
+dev_manager_(),
 area_id_(""),
 org_id_(""),
 register_scan_stop_(0),
@@ -62,9 +50,6 @@ DetectHost::~DetectHost()
 {
     dep_scan_pause_ = 0;
     dep_scan_stop_ = 1;
- 
-    report_block_.Close();
-    report_center_.Close();
 }
 
 void* dep_scan_function(void* context)
@@ -77,26 +62,9 @@ void* dep_scan_function(void* context)
 int DetectHost::Init()
 {
     LOG_INFO("DetectInit: begin.");
-
-    GetDataCenterIp();
-    GetBlockIp();
-    //从这里开始上报数据，所以需要打开连接。
-    if(!report_center_.Open())
+    if(dev_manager_.InitReportObj() < 0)
     {
-        LOG_ERROR("Start: open center report error.");
-        if(GetDataCenterIp() == false)
-        {
-            LOG_ERROR("Start: GetDataCenterIp failed.");
-        }
-    }
-
-    if(!report_block_.Open())
-    {
-        LOG_ERROR("Start: open block report error.");
-        if(GetBlockIp() == false)
-        {
-            LOG_ERROR("Start: GetBlockIp failed.");
-        }
+        LOG_ERROR("Init: init report object failed.");
     }
 
     if(dep_scan_thread_ == 0)
@@ -120,61 +88,9 @@ int DetectHost::Init()
     return 	1;
 }
 
-int DetectHost::GetDataCenterIp()
-{
-    ServiceReg cm;
-
-    std::string szCenterIp;
-    std::string szCenterPort;
-    std::string szCenterOrgId;
-
-    if(cm.Fetch(SERVICE_CODE_CENTER, szCenterOrgId, szCenterIp, szCenterPort))
-    {
-        LOG_DEBUG("GetDataCenterIp: fetch data service ip=" << szCenterIp << ", port=" << szCenterPort);
-    }
-    else
-    {
-        LOG_ERROR("GetDataCenterIp: fetch data service error.");
-    }
-
-    if(report_center_.Init(szCenterIp, atoi(szCenterPort.c_str()), 1) == false)
-    {
-        return -1;
-    }
-    return 0;
-}
-
-int DetectHost::GetBlockIp()
-{
-    ServiceReg cm;
-
-    std::string szBlockIp;
-    std::string szBlockPort;
-    std::string szBlockOrgId;
-
-    if(cm.Fetch(SERVICE_CODE_BLOCK, szBlockOrgId, szBlockIp, szBlockPort))
-    {
-        LOG_DEBUG("Init: fetch block service ip=" << szBlockIp << ", port=" << szBlockPort);
-    }
-    else
-    {
-        LOG_ERROR("Init: fetch block service error.");
-    }
-
-    if(report_block_.Init(szBlockIp, atoi(szBlockPort.c_str()), 1) == false)
-    {
-        return -1;
-    }
-    return 0;
-}
-
 void DetectHost::DetectChange()
 {
-    mapDev ().swap(register_dev_);
-    mapDev ().swap(register_dev_keep_);
-    mapDev ().swap(unregister_dev_);
-    mapDev ().swap(unregister_dev_keep_);
-    mapDev ().swap(roaming_dev_);
+    dev_manager_.ClearDevMap();
 }
 
 int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string szOrgId, int mode)
@@ -182,15 +98,14 @@ int DetectHost::Start(MAP_COMMON * ipRange, std::string szAreaId, std::string sz
     area_id_ = szAreaId;
     org_id_ = szOrgId;
 
+    dev_manager_.SetDetectMode(mode);
     if(mode == 1)
-    {
-        detect_mode_ = 1;
+    {    
         dep_scan_pause_ = 0;
         LOG_INFO("Start: depth scan continue...");
     }
     else
     {
-        detect_mode_ = 0;
         dep_scan_pause_ = 1;
         LOG_INFO("Start: depth scan pause...");
     }
@@ -208,18 +123,12 @@ int DetectHost::DepthScan()
         {
             sleep(30);
         }
-        nmap_dev_mutex_.Lock();
-        while(nmap_dev_.empty())
-        {
-            nmap_dev_mutex_.Unlock();
-            sleep(30);
-            nmap_dev_mutex_.Lock();
-        }
 
         DEV_INFO device;
-        device = nmap_dev_.front();
-        nmap_dev_.pop_front();
-        nmap_dev_mutex_.Unlock();
+        while(false == dev_manager_.GetDevfromNmap(device))
+        {
+            sleep(30);
+        }
 
         if(!device.szDevType.empty() && !device.szOsType.empty())
         {
@@ -246,20 +155,7 @@ int DetectHost::DepthScan()
             device.szOsType = dev_info.systype_name;
             //进行上报
             LOG_DEBUG("DepthScan: nmap scan ip("<<device.szIP.c_str()<<")---->"<<device.szDevType.c_str());
-            std::string szText = CreateSendText(device);
-            LOG_DEBUG("DepthScan: discover unregister device: "<<szText.c_str());
-            bool bret;
-            bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("DepthScan: send data to center service failed. data:"<<szText);
-            }
-
-            bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("DepthScan: send data to block service failed. data:"<<szText);
-            }
+            dev_manager_.ReportNmapDev(device);
             exit(0);
         }
         else if(pid < 0)
@@ -272,7 +168,7 @@ int DetectHost::DepthScan()
             wait(NULL); //防止信号中断该函数，导致子进程回收资源失败。
         }
     }
-    list<DEV_INFO> ().swap(nmap_dev_);
+    dev_manager_.ClearNmap();
     LOG_INFO("DepthScan: end.");
     return 0;
 }
@@ -332,15 +228,7 @@ void DetectHost::RecvClientPack()
             }
         }
     }
-
-    //register_mutex_.Lock();
-    mapDev::iterator it = register_dev_.begin();
-    while(it != register_dev_.end())
-    {
-        register_dev_keep_.insert(mapDev::value_type(it->first, it->second));
-        it++;
-    }
-    //register_mutex_.Unlock();
+    dev_manager_.UpdateRegKeepDev();
 }
 
 void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
@@ -385,46 +273,13 @@ void DetectHost::ParseClientPack(ULONG uip, char* data, int iLen)
     devinfo.szRegOrgId = CodeConvert::g2u(json_object["orgId"].asString());
     devinfo.count = 0;
 
-    //register_mutex_.Lock();
-    register_dev_.insert(mapDev::value_type(uip, devinfo));
     std::string szText = CreateSendText(devinfo);
     LOG_DEBUG("parseClientPack: discover register device: "<<szText.c_str());
-    //register_mutex_.Unlock();
+    dev_manager_.PushRegDev(uip, devinfo);
 
     if(devinfo.szAreaId.compare(devinfo.szRegAreaId) != 0) //漫游主机(区域id不同)
     {
-        mapDev::iterator iter = roaming_dev_.find(uip);
-        if(iter == roaming_dev_.end())
-        {
-            roaming_dev_.insert(mapDev::value_type(uip, devinfo));//漫游设备
-            //std::string szText = CreateSendText(devinfo);
-
-            LOG_DEBUG("parseClientPack: discover roaming device: "<<szText.c_str());
-
-            bool bret;
-            bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("parseClientPack: send data to center service failed. data:"<<szText);
-            }
-
-            bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("parseClientPack: send data to block service failed. data:"<<szText);
-            }
-            if(detect_mode_ == 1)
-            {
-                //nmap_dev_.insert(mapDev::value_type(uip, devinfo));
-                nmap_dev_mutex_.Lock();
-                nmap_dev_.push_back(devinfo);
-                nmap_dev_mutex_.Unlock();
-            }
-        }
-        else
-        {
-            iter->second.count = 0;
-        }
+        dev_manager_.PushRoamingDev(uip, devinfo);
     }
 }
 
@@ -518,13 +373,6 @@ bool DetectHost::RecvIcmpPack()
             }
             else
             {
-                if(register_dev_.find(uip) != register_dev_.end())
-                {
-                    //如果该设备是一个已注册设备，则将该设备从未注册设备中清除。
-                    unregister_dev_.erase(uip);
-                    unregister_dev_keep_.erase(uip);
-                    continue;
-                }
                 DEV_INFO device;
                 device.szIP = ip;
                 device.szBoot = "1";
@@ -535,51 +383,7 @@ bool DetectHost::RecvIcmpPack()
                 device.szFireWall = "2";
                 device.count = 0;
 
-                unregister_dev_.insert(mapDev::value_type(uip, device));
-
-                //如果该设备是一个老的未注册设备，则不进行上报
-                //如果该设备是一个新的未注册设备，则进行上报，
-                //并且上报成功之后，该设备定义为老的未注册设备，
-                //下次扫描到之后不进行上报。
-                if(unregister_dev_keep_.find(uip) != unregister_dev_keep_.end())
-                {
-                    continue;
-                }
-                else
-                {
-                    if(device.szMac.empty())
-                    {
-                        string mac;
-                        get_mac_addr(ip, mac);
-                        device.szMac = mac;
-                    }
-                    std::string szText = CreateSendText(device);
-                    LOG_DEBUG("recvPingPack: discover unregister device: " << szText.c_str());
-
-                    bool bret1, bret2;
-                    bret1 = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
-                    if(!bret1)
-                    {
-                        LOG_ERROR("recvPingPack: send data to center service error, data:"<<szText.c_str());
-                    }
-
-                    bret2 = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
-                    if(!bret2)
-                    {
-                        LOG_ERROR("recvPingPack: send data to block service error, data:"<<szText.c_str());
-                    }
-                    if(bret1 && bret2)
-                    {
-                        unregister_dev_keep_.insert(mapDev::value_type(uip, device));
-                    }
-                    if(detect_mode_ == 1)
-                    {
-                        //nmap_dev_.insert(mapDev::value_type(uip, device));
-                        nmap_dev_mutex_.Lock();
-                        nmap_dev_.push_back(device);
-                        nmap_dev_mutex_.Unlock();
-                    }
-                }
+                dev_manager_.PushUnregDev(uip, device);
             }
         }
     }
@@ -655,14 +459,6 @@ void DetectHost::RecvNbtPack()
 
             ULONG ipRev = ntohl(addrfrom.sin_addr.s_addr);
 
-            if(register_dev_.find(ipRev) != register_dev_.end())
-            {
-                //如果该设备是已注册设备，则从未注册设备中进行清除。
-                unregister_dev_.erase(ipRev);
-                unregister_dev_keep_.erase(ipRev);
-                continue;
-            }
-
             _NBT_INFO  info;
             ParseNbtPack(ipRev, RecvBuf, strlen(RecvBuf), &info);
 
@@ -677,45 +473,9 @@ void DetectHost::RecvNbtPack()
             device.szIP = info.szIp;
             device.szMac = info.szMac;
             device.szFireWall = "2";
-            device.count = 0;	
+            device.count = 0;
 
-            unregister_dev_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
-
-            if(unregister_dev_keep_.find(ipRev) != unregister_dev_keep_.end())
-            {
-                //如果该设备是未注册设备，并且该设备不是新扫描到的未注册设备，
-                //则不进行上报。
-                continue;
-            }
-            else
-            {
-                std::string szText = CreateSendText(device);
-                LOG_DEBUG("recvNbtPack: discover unregister device: " << szText.c_str());
-                bool bret1, bret2;
-                bret1 = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
-                if(!bret1)
-                {
-                    LOG_ERROR("recvNbtPack: send data to center service error, data:"<<szText.c_str());
-                }
-
-                bret2 = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
-                if(!bret2)
-                {
-                    LOG_ERROR("recvNbtPack: send data to block service error, data:"<<szText.c_str());
-                }
-                if(bret1 && bret2)
-                {
-                    //如果上报成功，则将该设备定义为老的未注册设备。
-                    unregister_dev_keep_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
-                }
-                if(detect_mode_ == 1)
-                {
-                    //nmap_dev_.insert(std::pair<ULONG, DEV_INFO>(ipRev, device));
-                    nmap_dev_mutex_.Lock();
-                    nmap_dev_.push_back(device);
-                    nmap_dev_mutex_.Unlock();
-                }
-            }
+            dev_manager_.PushUnregDev(ipRev, device);
         }
     }	
 }
@@ -1151,108 +911,7 @@ int DetectHost::StandardScan(MAP_COMMON * ipRange)
 
 int DetectHost::CalculateCloseDev()
 {
-    mapDev::iterator it = register_dev_keep_.begin();
-    while(it != register_dev_keep_.end())
-    {
-        if(register_dev_.find(it->first) == register_dev_.end() 
-           && unregister_dev_.find(it->first) == unregister_dev_.end())
-        {
-            it->second.count ++;
-            if(it->second.count < SCAN_UNREPLY_COUNT)
-            {
-                ++it;
-                continue;
-            }
-
-            //检测到已注册设备->关机设备。
-            it->second.szBoot = "0";
-            std::string szText = CreateSendText(it->second);
-
-            struct sockaddr_in Addr = {0};
-            Addr.sin_addr.s_addr = htonl(it->first);
-            std::string szip = inet_ntoa(Addr.sin_addr);
-
-            LOG_DEBUG("DetectClose: discover register->shutdown device: "<<szText.c_str());
-
-            bool bret;
-            bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
-            }
-
-            bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
-
-            }
-            if(detect_mode_ == 1)
-            {
-                //nmap_dev_.insert(*it);
-                nmap_dev_mutex_.Lock();
-                nmap_dev_.push_back(it->second);
-                nmap_dev_mutex_.Unlock();
-            }
-            register_dev_keep_.erase(it++);
-            continue;
-        }
-        ++it;
-    }
-
-    it = unregister_dev_keep_.begin();
-    while(it != unregister_dev_keep_.end())
-    {
-        if(register_dev_.find(it->first) == register_dev_.end()
-           && unregister_dev_.find(it->first) == unregister_dev_.end())
-        {
-            it->second.count ++;
-            if(it->second.count < SCAN_UNREPLY_COUNT)
-            {
-                ++it;
-                continue;
-            }
-            
-            //检测到未注册设备->关机设备
-            it->second.szBoot = "0";
-            std::string szText = CreateSendText(it->second);
-
-            struct sockaddr_in Addr = {0};
-            Addr.sin_addr.s_addr = htonl(it->first);
-            std::string szip = inet_ntoa(Addr.sin_addr);
-
-            LOG_DEBUG("DetectClose: discover unregister->shutdown device: "<<szText.c_str());
-
-            bool bret;
-            bret = report_center_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("DetectClose: send data to center service error, data:"<<szText.c_str());
-            }
-
-            bret = report_block_.SendToServer(SERVICE_CODE_BLOCK, MINCODE_BLOCK, calCRC(szText), false, szText);
-            if(!bret)
-            {
-                LOG_ERROR("DetectClose: send data to block service error, data:"<<szText.c_str());
-
-            }
-            if(detect_mode_ == 1)
-            {
-                //nmap_dev_.insert(*it);
-                nmap_dev_mutex_.Lock();
-                nmap_dev_.push_back(it->second);
-                nmap_dev_mutex_.Unlock();
-            }
-            unregister_dev_keep_.erase(it++);
-            continue;
-        }
-        ++it;
-    }
-
-    mapDev ().swap(register_dev_);
-    mapDev ().swap(unregister_dev_);
-
-    return 0;
+    return dev_manager_.CalculateCloseDev();
 }
 
 struct timeval tvSub(struct timeval timeval1,struct timeval timeval2)

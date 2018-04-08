@@ -1,10 +1,7 @@
 #ifndef _DETECT_HOST_H
 #define _DETECT_HOST_H
 
-#include "defines.h"
-#include "upreport.h"
-#include "mutex.h"
-
+#include "dev_manager.h"
 #include <netinet/ip_icmp.h>
 
 namespace cems{ namespace service{ namespace scan{
@@ -40,8 +37,6 @@ private:
     int SendPacks( char* start, char* end, SEND_TYPE type);
     bool SendPack(unsigned long uip, SEND_TYPE type); 
     std::string CreateSendText(DEV_INFO & info);
-    int GetDataCenterIp();
-    int GetBlockIp();
 
 public:
     int SendDetectPack(MAP_COMMON* ipRange, SEND_TYPE send_type);
@@ -66,22 +61,7 @@ private:
     void MakeQueryPack(struct Q_NETBIOSNS& nbns);
 
 private:
-    int detect_mode_;  //0是标准扫描，1是深度扫描
-    //Mutex unregister_mutex_;
-    //Mutex register_mutex_;
-    Mutex nmap_dev_mutex_;
-
-    UpReport report_block_;
-    UpReport report_center_;
-
-    mapDev unregister_dev_;
-    mapDev unregister_dev_keep_;
-
-    mapDev register_dev_;
-    mapDev register_dev_keep_;
-    mapDev roaming_dev_;
-
-    list<DEV_INFO> nmap_dev_;
+    DevManager dev_manager_;
 
     std::string area_id_;
     std::string org_id_;

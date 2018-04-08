@@ -24,59 +24,6 @@ struct IP_RANGE
     ULONG second;
 };
 
-struct  DEV_INFO
-{
-    std::string szDevType;
-    std::string szOsType;
-    std::string szIP;
-    std::string szGroupName;
-    std::string szHostName;
-    std::string szMac;
-    std::string szBoot;
-    std::string szDevId;
-    std::string szFireWall;
-    std::string szOrgId;
-    std::string szRegOrgId;
-    std::string szAreaId;
-    std::string szRegAreaId;
-    int    count;
-    DEV_INFO(): 
-    szDevType(""),
-    szOsType(""),
-    szGroupName(""),
-    szHostName(""),
-    szMac(""),
-    szBoot(""),
-    szDevId(""),
-    szFireWall(""),
-    szOrgId(""),
-    szRegOrgId(""),
-    szAreaId(""),
-    szRegAreaId(""),
-    count(0)
-    {
-    }
-
-    struct DEV_INFO operator=(const struct DEV_INFO& device)
-    {
-        this->szDevType = device.szDevType;
-        this->szOsType = device.szOsType;
-        this->szIP = device.szIP;
-        this->szGroupName = device.szGroupName;
-        this->szHostName = device.szHostName;
-        this->szMac = device.szMac;
-        this->szBoot = device.szBoot;
-        this->szDevId = device.szDevId;
-        this->szFireWall = device.szFireWall;
-        this->szOrgId = device.szOrgId;
-        this->szRegOrgId = device.szRegOrgId;
-        this->szAreaId = device.szAreaId;
-        this->szRegAreaId = device.szRegAreaId;
-        this->count = device.count;
-        return *this;
-    }
-};
-
 struct THD_PARAM
 {
    void* param1;
@@ -166,9 +113,8 @@ struct ST_ENCRYPT
 
 #define         SCAN_SERVER_FLAG        "ScanServerPacket"
 
-typedef map<ULONG, DEV_INFO> mapDev;
 typedef map<ULONG, ULONG> mapFLAG;
-typedef list<mapDev> LIST_DEV;
+//typedef list<mapDev> LIST_DEV;
 
 typedef std::map<std::string, std::string> MAP_COMMON;
 typedef std::list<MAP_COMMON> LIST_KEYS;
