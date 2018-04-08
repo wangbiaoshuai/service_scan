@@ -3,6 +3,7 @@
 
 #include "dev_manager.h"
 #include <netinet/ip_icmp.h>
+#include "defines.h"
 
 namespace cems{ namespace service{ namespace scan{
 enum SEND_TYPE
