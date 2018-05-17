@@ -29,7 +29,8 @@ session_map_lock_(),
 session_map_(),
 service_addr_map_lock_(),
 service_addr_map_(),
-log_(NULL)
+log_(NULL),
+parse_router_()
 {
     printf("ServiceRequest constructor.\n");
 }
@@ -184,7 +185,7 @@ string session2stringhex(const unsigned char* data, int len)
     data = data + len - 1;
     for(int i = 0; i < len; i++, data--)
     {
-        sprintf(buf, "%02X", *data);
+        sprintf(buf, "%02x", *data);
         result = result + string(buf, strlen(buf));
     }
     return result;
@@ -206,8 +207,10 @@ int ServiceRequest::ParseMsgBody(const void* msg, unsigned int len, PARAM_INFO& 
     param_info.msgcode_ = p_header->dwMsgCode;
     param_info.is_zip_ = (bool)(p_header->wType);
     ptr += sizeof(CEMS_NET_HEAD);
-    param_info.jdata_ = string(ptr, 0, len - sizeof(CEMS_NET_HEAD));
+    //param_info.jdata_ = string(ptr, len - sizeof(CEMS_NET_HEAD));
+    param_info.jdata_ = string(ptr, p_header->dwDataSize);
     param_info.session_id_ = session2stringhex(p_header->szSessionId, 16);
+    //for test
     /*DeviceKeyCache device_key;
     if(QueryDeviceKeyByCache(param_info.session_id_, device_key) < 0 || device_key.keyType.empty() || device_key.password.empty())
     {
@@ -217,17 +220,35 @@ int ServiceRequest::ParseMsgBody(const void* msg, unsigned int len, PARAM_INFO& 
     param_info.is_encrypt_ = true;
     param_info.key_ = device_key.password;
     param_info.flag_ = atoi(device_key.keyType.c_str());*/
-#ifdef _DEBUG
-    ngx_log_error(NGX_LOG_DEBUG, log_, 0, "maxcode: %s, mincode: %s, checkcode: %s, jdata: %s, is_zip: %d, session_id: %s\n", param_info.maxcode_.c_str(), param_info.mincode_.c_str(), param_info.checkcode_.c_str(), param_info.jdata_.c_str(), p_header->wType, param_info.session_id_.c_str());
+ 
+//#ifdef _DEBUG
+    ngx_log_error(NGX_LOG_DEBUG, log_, 0, "maxcode: %s, mincode: %s, checkcode: %s, jdata: %s, is_zip: %d, session_id: %s, dwDataSize: %d\n", param_info.maxcode_.c_str(), param_info.mincode_.c_str(), param_info.checkcode_.c_str(), param_info.jdata_.c_str(), p_header->wType, param_info.session_id_.c_str(), p_header->dwDataSize);
     //printf("maxcode: %s, mincode: %s, checkcode: %s, jdata: %s, is_zip: %d, session_id: %s\n", param_info.maxcode_.c_str(), param_info.mincode_.c_str(), param_info.checkcode_.c_str(), param_info.jdata_.c_str(), p_header->wType, param_info.session_id_.c_str());
-#endif
+//#endif
     return 0;
 }
 
 string ServiceRequest::GetdataTC(const PARAM_INFO& param_info)
 {
     string result("");
-    result = GetdataTC(param_info.maxcode_, param_info.mincode_, param_info.checkcode_, param_info.is_zip_, param_info.jdata_, param_info.session_id_, param_info.msgcode_);
+    string key = param_info.maxcode_ + ":" + param_info.mincode_;
+    string value;
+    string maxcode, mincode;
+    if(parse_router_.GetRouter(key, value))
+    {
+        size_t pos = value.find(':');
+        if(pos != string::npos)
+        {
+            maxcode = value.substr(0, pos);
+            mincode = value.substr(pos + 1);
+        }
+    }
+    else
+    {
+        maxcode = param_info.maxcode_;
+        mincode = param_info.mincode_;
+    }
+    result = GetdataTC(maxcode, mincode, param_info.checkcode_, param_info.is_zip_, param_info.jdata_, param_info.session_id_, param_info.msgcode_);
     return result;
 }
 

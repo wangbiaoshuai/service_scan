@@ -241,6 +241,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_zone_module.o \
 	objs/addon/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.o \
 	objs/addon/ngx_http_tcpservlet_module/service_request.o \
+	objs/addon/ngx_http_tcpservlet_module/parse_router.o \
 	objs/addon/ngx_http_tcpservlet_module/mutex.o \
 	objs/ngx_modules.o
 
@@ -362,6 +363,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_zone_module.o \
 	objs/addon/ngx_http_tcpservlet_module/ngx_http_tcpservlet_module.o \
 	objs/addon/ngx_http_tcpservlet_module/service_request.o \
+	objs/addon/ngx_http_tcpservlet_module/parse_router.o \
 	objs/addon/ngx_http_tcpservlet_module/mutex.o \
 	objs/ngx_modules.o \
 	-ldl -lpthread -lcrypt -lpcre -lz \
@@ -1195,6 +1197,12 @@ objs/addon/ngx_http_tcpservlet_module/service_request.o: $(ADDON_DEPS) \
 	$(CXX) -c $(CFLAGS)  $(ALL_INCS)  ${MY_CXXFLAGS} \
 		-o objs/addon/ngx_http_tcpservlet_module/service_request.o \
 		./extends/ngx_http_tcpservlet_module/service_request.cpp
+
+objs/addon/ngx_http_tcpservlet_module/parse_router.o: $(ADDON_DEPS) \
+	./extends/ngx_http_tcpservlet_module/parse_router.cpp
+	$(CXX) -c $(CFLAGS)  $(ALL_INCS)  ${MY_CXXFLAGS} \
+		-o objs/addon/ngx_http_tcpservlet_module/parse_router.o \
+		./extends/ngx_http_tcpservlet_module/parse_router.cpp
 
 objs/addon/ngx_http_tcpservlet_module/mutex.o: $(ADDON_DEPS) \
 	./extends/ngx_http_tcpservlet_module/mutex.cpp

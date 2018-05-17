@@ -40,9 +40,9 @@ static char* ngx_http_tcpservlet(ngx_conf_t* cf, ngx_command_t* cmd, void* conf)
     string ip, port;
     ngx_str_t* serv_arg = (ngx_str_t*)(cf->args->elts);
     serv_arg++;
-    ip = string((char*)(serv_arg->data));
+    ip = string((char*)(serv_arg->data), serv_arg->len);
     serv_arg++;
-    port = string((char*)(serv_arg->data));
+    port = string((char*)(serv_arg->data), serv_arg->len);
 
     service.SetAddr(ip, port);
     return NGX_CONF_OK;
@@ -67,7 +67,7 @@ ngx_module_t ngx_http_tcpservlet_module = {
 
 static ngx_int_t ngx_http_tcpservlet_handler(ngx_http_request_t* r)
 {
-    if(!(r->method & (NGX_HTTP_POST|NGX_HTTP_GET|NGX_HTTP_HEAD)))
+    if(!(r->method & NGX_HTTP_POST))
     {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Not post, nginx http not allowed.");
         return NGX_HTTP_NOT_ALLOWED;
@@ -86,12 +86,23 @@ void ngx_http_tcpservlet_body_handler(ngx_http_request_t* r)
     ngx_str_t response;
     do
     {
+        string tmp_body;
+        int tmp_length = 0;
         ngx_str_t body = ngx_null_string;
         ngx_http_request_body_t* rb = r->request_body;
         if(rb && rb->bufs)
         {
-            body.data = (u_char *)rb->bufs->buf->pos;
-            body.len = rb->bufs->buf->last - rb->bufs->buf->pos;
+            ngx_chain_t* chain_buf = rb->bufs;
+            while(chain_buf)
+            {
+                //body.data = (u_char *)rb->bufs->buf->pos;
+                //body.len = rb->bufs->buf->last - rb->bufs->buf->pos;
+                body.data = (u_char *)chain_buf->buf->pos;
+                body.len = chain_buf->buf->last - chain_buf->buf->pos;
+                tmp_body += string((char*)body.data, body.len);
+                tmp_length += body.len;
+                chain_buf = chain_buf->next;
+            }
         }
         else
         {
@@ -101,10 +112,9 @@ void ngx_http_tcpservlet_body_handler(ngx_http_request_t* r)
             break;
         }
 
-        //ServiceRequest service("192.168.133.148", "8100");
         service.SetLog(r->connection->log);
         PARAM_INFO param_info;
-        if(service.ParseMsgBody(body.data, body.len, param_info) < 0)
+        if(service.ParseMsgBody(tmp_body.c_str(), tmp_length, param_info) < 0)
         {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "parse message body failed.");
             r->headers_out.status = NGX_HTTP_BAD_REQUEST;
@@ -123,8 +133,9 @@ void ngx_http_tcpservlet_body_handler(ngx_http_request_t* r)
         ngx_log_error(NGX_LOG_DEBUG, r->connection->log, 0, "GetdataTC result: %s", result.c_str());
 
         response.len = result.length();
-        response.data = (u_char*)ngx_pcalloc(r->pool, response.len);
-        ngx_memcpy(response.data, result.c_str(), response.len);
+        /*response.data = (u_char*)ngx_pcalloc(r->pool, response.len);
+        ngx_memcpy(response.data, result.c_str(), response.len);*/
+        response.data = (u_char*)result.c_str();
         r->headers_out.status = NGX_HTTP_OK;
     }while(0);
     

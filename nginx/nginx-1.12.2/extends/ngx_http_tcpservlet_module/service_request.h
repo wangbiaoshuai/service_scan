@@ -9,6 +9,7 @@
 #include "CommonService.h"
 #include "mutex.h"
 #include "bean_types.h"
+#include "parse_router.h"
 extern "C"{
 #include <ngx_http.h>
 }
@@ -84,6 +85,7 @@ private:
     Mutex service_addr_map_lock_;
     std::map<std::string, Address> service_addr_map_;
     ngx_log_t* log_;
+    ParseRouter parse_router_;
 };
 
 #endif // _SERVICE_REQUEST_H
