@@ -1,0 +1,1 @@
+g++ -g -m64  MCrypt.cpp SMS4.cpp  Base64.cpp  -fPIC -shared -o libMCrypt.so  ./libssl.a  ./libcrypto.a  -ldl -lrt

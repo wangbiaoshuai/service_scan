@@ -1,0 +1,32 @@
+curl 库配置
+
+./configure --help
+帮助需要去掉那些不必要得包
+
+./configure --with-ssl
+当前使用的curl库配置
+
+
+//动态(openssl)
+g++ -g -m64 main.cpp -o main  -lcrypto -lssl ./libcurl.a ./libz.a -ldl -lrt
+
+//静态(注意 libcurl.a libcrypt.a  libssl.a 编译顺序)
+g++ -g -m64  MCurl.cpp -o main ./libcurl.a  ./libssl.a ./libcrypto.a ./libz.a -ldl -lrt
+
+g++ -g -m64 MCurl.cpp -fPIC -shared -o libMCurl.so ./libcurl.a  ./libssl.a  ./libcrypto.a ./libz.a  -ldl -lrt
+//编译成动态库
+
+
+注意所有依赖的静态库需要支持shared
+
+否则先需要将依赖的库，重新编译成支持shared
+
+
+使用方法
+ldd  查看依赖库
+
+ldd -r 查看未定符号
+
+readelf -d 查看pe文件
+
+

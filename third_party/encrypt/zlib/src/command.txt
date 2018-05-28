@@ -1,0 +1,4 @@
+g++ -g -m64 m_zlib.cpp Base64.cpp ./libz.a -o mzip
+
+g++ -g -m64  m_zlib.cpp  Base64.cpp  -fPIC -shared -o libMZlib.so ./libz.a  -ldl -lrt
+
