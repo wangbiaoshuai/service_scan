@@ -17,7 +17,7 @@ using boost::asio::ip::tcp;
 using namespace std;
 
 #define TIMEOUT_COUNT 45
-#define BODY_LEN 1024
+#define BODY_LEN 1024 * 5
 
 namespace transfer {
 
