@@ -291,7 +291,7 @@ bool ServiceReg::RegistToConfSrv()
     return ret;
 }
 
-bool ServiceReg::Fetch(const std::string& service_code, const std::string& org_id, std::string& ip, std::string& port)
+bool ServiceReg::Fetch(const std::string& service_code, const std::string& /*org_id*/, std::string& ip, std::string& port)
 {
     if(service_code.empty())
     {

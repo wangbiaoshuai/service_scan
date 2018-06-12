@@ -5,6 +5,8 @@
 #include "log.h"
 #include "common_function.h"
 #include "json/json.h"
+#include "parse_configure.h"
+#include "parse_policy.h"
 
 #define SCAN_UNREPLY_COUNT	3
 
@@ -16,6 +18,7 @@ unregister_dev_keep_(),
 register_dev_(),
 register_dev_keep_(),
 roaming_dev_(),
+runaway_dev_(),
 detect_mode_(0),
 nmap_dev_mutex_(),
 nmap_dev_()
@@ -83,6 +86,7 @@ void DevManager::ClearDevMap()
     mapDev ().swap(unregister_dev_);
     mapDev ().swap(unregister_dev_keep_);
     mapDev ().swap(roaming_dev_);
+    vector<unsigned long> ().swap(runaway_dev_);
 }
 
 int DevManager::GetDevRegIp()
@@ -170,8 +174,20 @@ void DevManager::PushUnregDev(unsigned long ip, const DEV_INFO& device)
         unregister_dev_keep_.erase(ip);
         return;
     }
-
     unregister_dev_.insert(mapDev::value_type(ip, device));
+    if(std::find(runaway_dev_.begin(), runaway_dev_.end(), ip) != runaway_dev_.end())
+    {
+        //进行上报
+        bool bret = false;
+        std::string szText = CreateSendText(unregister_dev_[ip]);
+        LOG_DEBUG("find runaway device, report devreg service: "<<szText);
+        bret = report_devreg_.SendToServer(SERVICE_CODE_CENTER, MINCODE_CENTER, calCRC(szText), false, szText);
+        if(!bret)
+        {
+            LOG_ERROR("DevManager: send data to center service failed. data:"<<szText);
+        }
+    }
+
     mapDev::iterator iter = unregister_dev_keep_.find(ip);
     if(iter != unregister_dev_keep_.end())
     {
@@ -365,6 +381,7 @@ int DevManager::CalculateCloseDev()
 
     mapDev ().swap(register_dev_);
     mapDev ().swap(unregister_dev_);
+    vector<unsigned long> ().swap(runaway_dev_);
 
     return 0;
 }
@@ -415,4 +432,84 @@ std::string DevManager::CreateSendText(const DEV_INFO& info)
     szText = writer.write(root);
 
     return szText;
+}
+
+int DevManager::GetRunawayDev()
+{
+    ServiceReg cm;
+
+    std::string szDevRegIp;
+    std::string szDevRegPort;
+    std::string szDevRegOrgId;
+
+    if(cm.Fetch(SERVICE_CODE_CENTER, szDevRegOrgId, szDevRegIp, szDevRegPort))
+    {
+        LOG_DEBUG("DevManager: fetch devreg service ip=" << szDevRegIp << ", port=" << szDevRegPort);
+    }
+    else
+    {
+        LOG_ERROR("DevManager: fetch devreg service error.");
+        return -1;
+    }
+
+    string serverIp, serviceId, scanTime;
+    if(ParseConfigure::GetInstance().GetProperty("server.ip", serverIp) == false)
+    {
+        LOG_ERROR("DevManager: get server ip false.");
+        return -1;
+    }
+    if(ParseConfigure::GetInstance().GetProperty("service.id", serviceId) == false)
+    {
+        LOG_ERROR("DevManager: get service id false.");
+        return -1;
+    }
+    PolicyParam policy_param;
+    if(ParsePolicy::GetInstance().ReadPolicy(policy_param) == -1)
+    {
+        LOG_ERROR("DevManager: read policy file error.");
+        return -1;
+    }
+    scanTime = policy_param.interval_time;
+
+    std::string maxcode = SERVICE_CODE_CENTER;
+    std::string mincode = MINCODE_RUNAWAY;
+    std::string jdata;
+    Json::Value root;
+    root["serverIp"] = serverIp;
+    root["serviceId"] = serviceId;
+    root["scanTime"] = scanTime;
+    Json::FastWriter writer;
+    jdata = writer.write(root);
+
+    string jresult;
+    jresult = cm.RequestService(szDevRegIp, szDevRegPort, maxcode, mincode, false, jdata);
+    if(jresult.empty())
+    {
+        printf("DevManager: request service error.");
+        return -1;
+    }
+    LOG_DEBUG("DevManager: jresult: "<<jresult.c_str());
+    Json::Reader reader;
+    Json::Value jread, jtmp, jpolicy;
+    if(!reader.parse(jresult, jread))
+    {
+        LOG_ERROR("DevManager: parse jresult failed.");
+        return -1;
+    }
+
+    if(jread["result"].compare("0") != 0)
+    {
+        LOG_ERROR("DevManager: request service result!=0, failed.");
+        return -1;
+    }
+    jtmp = jread["jdata"];
+    for(size_t i = 0; i < jtmp.size(); i++)
+    {
+        Json::Value elem = jtmp[i];
+        unsigned long ip = ntohl(inet_addr(elem["ip"].asString().c_str()));
+        runaway_dev_.push_back(ip);
+    }
+
+    LOG_DEBUG("DevManager: get "<<runaway_dev_.size()<<" runaway device.");
+    return 0;
 }

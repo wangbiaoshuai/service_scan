@@ -316,7 +316,7 @@ int FastScan::StartUpdatePolicy()
 
             if(jread["result"].compare("0") != 0)
             {
-                LOG_ERROR("StartUpdatePolicy: result=0, update policy file illegal.");
+                LOG_ERROR("StartUpdatePolicy: result!=0, update policy file illegal.");
                 break;
             }
             jtmp = jread["jdata"];

@@ -134,6 +134,7 @@ typedef std::list<MAP_COMMON> LIST_KEYS;
 #define MINCODE_CENTER          "21"                  
 #define MINCODE_BLOCK           "2100"
 #define MINCODE_SNMP        "21"             //snmp扫描
+#define MINCODE_RUNAWAY     "22"
 
 #define SERVICE_CODE_ADDRESS	"00FF0600"	    //地址服务
 #define MINCODE_ADDRESS_AREAID		"8"		    //获取AreaId

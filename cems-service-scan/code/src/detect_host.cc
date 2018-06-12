@@ -902,6 +902,7 @@ int DetectHost::NbtProbe(MAP_COMMON* const ipRange)
 int DetectHost::StandardScan(MAP_COMMON * ipRange)
 {
     LOG_INFO("start standerd scan.");
+    dev_manager_.GetRunawayDev();
     ClientProbe(ipRange);
     NbtProbe(ipRange);
     IcmpProbe(ipRange);

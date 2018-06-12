@@ -100,6 +100,7 @@ public:
 
     int InitReportObj();
 
+    int GetRunawayDev();
     void PushRoamingDev(unsigned long ip, const DEV_INFO& device);
     void PushRegDev(unsigned long ip, const DEV_INFO& device);
     void PushUnregDev(unsigned long ip, const DEV_INFO& device);
@@ -129,6 +130,7 @@ private:
     mapDev register_dev_;
     mapDev register_dev_keep_;
     mapDev roaming_dev_;
+    std::vector<unsigned long> runaway_dev_;
 
     int detect_mode_;  //0是标准扫描，1是深度扫描
     Mutex nmap_dev_mutex_;
